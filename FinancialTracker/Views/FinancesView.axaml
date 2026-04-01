@@ -6,9 +6,36 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FinancialTracker.Views.FinancesView"
              x:DataType="viewmodels:FinancesViewModel">
-    <DataGrid ItemsSource="{Binding Finances}">
-        <DataGrid.Columns>
-			<DataGridTextColumn Binding="{Binding Name}" />
-        </DataGrid.Columns>
-    </DataGrid>
+    <StackPanel>
+		<DataGrid ItemsSource="{Binding Finances}"
+                  x:Name="Table">
+            <DataGrid.Styles>
+				<Style Selector="DataGridRow">
+                    <Setter Property="ContextFlyout">
+                        <MenuFlyout>
+							<MenuFlyout.Items>
+                                <MenuItem Header="Delete" 
+                                          Command="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).DeleteRecordCommand}" 
+                                          CommandParameter="{Binding}" />
+                            </MenuFlyout.Items>
+                        </MenuFlyout>
+                    </Setter>
+                </Style>
+            </DataGrid.Styles>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id"
+                                    Binding="{Binding Id}" 
+                                    IsReadOnly="True"/>
+			    <DataGridTextColumn Header="Name" 
+                                    Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Amount"
+                                    Binding="{Binding Amount}" />
+                <DataGridTextColumn Header="Date"
+                                    Binding="{Binding Date}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Button Content="Save" Command="{Binding SaveChangesCommand}"/>
+    </StackPanel>
 </UserControl>

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using FinancialTracker.Services;
 using Microsoft.Extensions.Configuration;
 using System;
+using FinancialTracket.DataAccessLayer.Models;
 
 namespace FinancialTracker;
 
@@ -46,7 +47,23 @@ public partial class App : Application
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         AppDbContext db = serviceProvider.GetRequiredService<AppDbContext>();
+
+#if DEBUG
+        db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
+
+        Tag groceries = new() { Name = "Groceries" };
+        Finance f = new()
+        {
+            Name = "Grocery shopping",
+            Amount = 150.75m,
+            Date = DateOnly.FromDateTime(DateTime.Now),
+            Tags = new[] { groceries }
+        };
+
+        db.Add(f);
+        db.SaveChanges();
+#endif
 
         MainViewModel mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
 

@@ -12,16 +12,13 @@
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
-
-    <Grid>
-		<ui:NavigationView PaneDisplayMode="LeftMinimal"
+    <ui:NavigationView PaneDisplayMode="LeftCompact"
                        SelectedItem="{Binding SelectedNavigationItem}">
 		    <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="Finances" />
                 <ui:NavigationViewItem Content="Raw Query" />
             </ui:NavigationView.MenuItems>
-        </ui:NavigationView>
 
-        <ContentControl Content="{Binding ViewModel}" />
-    </Grid>
+            <ContentControl Content="{Binding ViewModel}" />
+        </ui:NavigationView>
 </UserControl>
