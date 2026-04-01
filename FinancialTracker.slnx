@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="FinancialTracker.Android/FinancialTracker.Android.csproj" />
+  <Project Path="FinancialTracker.Browser/FinancialTracker.Browser.csproj" />
+  <Project Path="FinancialTracker.Desktop/FinancialTracker.Desktop.csproj" />
+  <Project Path="FinancialTracker/FinancialTracker.csproj" />
+  <Project Path="FinancialTracket.DataAccessLayer/FinancialTracket.DataAccessLayer.csproj" Id="aa7ea291-2c5d-495f-9b8e-45a5f266eb10" />
+</Solution>
