@@ -38,16 +38,8 @@ public partial class App : Application
             e.SetObserved();
         };
 
-        string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "finances.db");
-        string connectionString = $"Data Source={dbPath}";
-
-        IServiceCollection services = new ServiceCollection();
-        services.AddDbContext<AppDbContext>(x => x.UseSqlite(connectionString));
-
-        services.AddTransient<FinancesViewModel>();
-        services.AddTransient<MainViewModel>();
-
-        services.AddSingleton<IViewCreator<FinancesViewModel>, ViewCreator<FinancesViewModel>>();
+        IServiceCollection services = new ServiceCollection()
+            .InjectCommonServices();
 
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
