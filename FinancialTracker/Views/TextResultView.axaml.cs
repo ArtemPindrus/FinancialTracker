@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace FinancialTracker.Views;
 
-public partial class AffectedRowsQueryResultView : UserControl
+public partial class TextResultView : UserControl
 {
-    public AffectedRowsQueryResultView()
+    public TextResultView()
     {
         InitializeComponent();
     }

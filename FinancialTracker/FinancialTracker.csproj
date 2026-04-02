@@ -28,4 +28,10 @@
   <ItemGroup>
     <ProjectReference Include="..\FinancialTracket.DataAccessLayer\FinancialTracket.DataAccessLayer.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\TextResultView.axaml.cs">
+      <DependentUpon>TextResultView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

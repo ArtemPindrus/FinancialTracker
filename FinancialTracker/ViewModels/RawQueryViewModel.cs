@@ -26,41 +26,49 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private async Task ExecuteQueryAsync() {
-            if (string.IsNullOrWhiteSpace(Query)) return;
+            try {
+                if (string.IsNullOrWhiteSpace(Query)) return;
 
-            int i = await dbContext.Database.ExecuteSqlRawAsync(Query);
+                int i = await dbContext.Database.ExecuteSqlRawAsync(Query);
 
-            ResultViewModel = new AffectedRowsQueryResultViewModel(i);
+                ResultViewModel = new TextResultViewModel($"Rows affected: {i}");
+            } catch (Exception e) {
+                ResultViewModel = new TextResultViewModel($"Exception occured: {e.Message}");
+            }
         }
 
         [RelayCommand]
         private async Task QueryAsync() {
-            using var con = dbContext.Database.GetDbConnection();
-            await con.OpenAsync();
+            try {
+                using var con = dbContext.Database.GetDbConnection();
+                await con.OpenAsync();
 
-            using var command = con.CreateCommand();
-            command.CommandText = Query;
+                using var command = con.CreateCommand();
+                command.CommandText = Query;
 
-            using var reader = await command.ExecuteReaderAsync();
-            ReadOnlyCollection<DbColumn> dbColumns = await reader.GetColumnSchemaAsync();
-            int cCount = dbColumns.Count;
+                using var reader = await command.ExecuteReaderAsync();
+                ReadOnlyCollection<DbColumn> dbColumns = await reader.GetColumnSchemaAsync();
+                int cCount = dbColumns.Count;
 
-            List<string[]> rows = [];
+                List<string[]> rows = [];
 
-            while (await reader.ReadAsync()) {
-                string[] row = new string[cCount];
+                while (await reader.ReadAsync()) {
+                    string[] row = new string[cCount];
 
-                for (int i = 0; i < dbColumns.Count; i++) {
-                    DbColumn? c = dbColumns[i];
+                    for (int i = 0; i < dbColumns.Count; i++) {
+                        DbColumn? c = dbColumns[i];
 
-                    row[i] = Convert.ToString(reader[c.ColumnName]);
+                        row[i] = Convert.ToString(reader[c.ColumnName]);
+                    }
+
+                    rows.Add(row);
                 }
 
-                rows.Add(row);
+                TableResultViewModel vm = new(dbColumns.Select(c => c.ColumnName).ToArray(), rows);
+                ResultViewModel = vm;
+            } catch (Exception e) {
+                ResultViewModel = new TextResultViewModel($"Exception occured: {e.Message}");
             }
-
-            TableResultViewModel vm = new(dbColumns.Select(c => c.ColumnName).ToArray(), rows);
-            ResultViewModel = vm;
         }
     }
 }

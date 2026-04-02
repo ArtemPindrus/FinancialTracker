@@ -4,10 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="using:FinancialTracker.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="FinancialTracker.Views.AffectedRowsQueryResultView"
-             x:DataType="viewmodels:AffectedRowsQueryResultViewModel">
-    <TextBlock>
-		<Run>Rows affected: </Run>
-        <Run Text="{Binding Rows}"/>
-    </TextBlock>
+             x:Class="FinancialTracker.Views.TextResultView"
+             x:DataType="viewmodels:TextResultViewModel">
+    <TextBlock Text="{Binding Text}"/>
 </UserControl>
