@@ -28,6 +28,8 @@ public partial class DropboxList : UserControl {
     }
 
     private void UserControl_Initialized(object? sender, EventArgs e) {
+        if (!ComboBoxItems.Contains(null)) ComboBoxItems.Insert(0, null);
+
         foreach (var i in Selected) {
             AddComboBox(i);
         }
