@@ -7,54 +7,55 @@ using System.Linq;
 namespace FinancialTracker.Controls;
 
 public partial class DropboxList : UserControl {
-    public static readonly StyledProperty<List<string>> ComboBoxItemsProperty =
-        AvaloniaProperty.Register<DropboxList, List<string>>(nameof(ComboBoxItems));
+    public static readonly StyledProperty<List<string?>> ComboBoxItemsProperty =
+        AvaloniaProperty.Register<DropboxList, List<string?>>(nameof(ComboBoxItems));
 
-    public static readonly StyledProperty<List<string>> InitialySelectedProperty =
-        AvaloniaProperty.Register<DropboxList, List<string>>(nameof(InitialySelected));
+    public static readonly StyledProperty<List<string>> SelectedProperty =
+        AvaloniaProperty.Register<DropboxList, List<string>>(nameof(Selected));
 
-    public List<string> ComboBoxItems {
+    public List<string?> ComboBoxItems {
         get => GetValue(ComboBoxItemsProperty);
         set => SetValue(ComboBoxItemsProperty, value);
     }
 
-    public List<string> InitialySelected {
-        get => GetValue(InitialySelectedProperty);
-        set => SetValue(InitialySelectedProperty, value);
-    }
-
-    public List<string> SelectedItems {
-        get {
-            List<string> selected = [];
-            foreach (ComboBox c in Wrap.Children.Cast<ComboBox>()) {
-                if (c.SelectedItem is string s) selected.Add(s);
-            }
-            return selected;
-        }
+    public List<string> Selected {
+        get => GetValue(SelectedProperty);
+        set => SetValue(SelectedProperty, value);
     }
 
     public DropboxList() {
         InitializeComponent();
     }
 
-    private void UserControl_Initialized(object? sender, System.EventArgs e) {
-        foreach (var i in InitialySelected) {
+    private void UserControl_Initialized(object? sender, EventArgs e) {
+        foreach (var i in Selected) {
             AddComboBox(i);
         }
 
-        AddEmptyComboBox();
+        AddComboBox(null);
     }
 
-    private void Empty_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
+    private void ComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
         ComboBox? c = (ComboBox)sender;
 
-        c.SelectionChanged -= Empty_SelectionChanged;
-        AddEmptyComboBox();
-    }
+        string? s = (string?)e.AddedItems[0];
+        if (s == null) {
+            int cInd = Wrap.Children.IndexOf(c);
 
-    private void AddEmptyComboBox() {
-        var empty = AddComboBox(null);
-        empty.SelectionChanged += Empty_SelectionChanged;
+            if (cInd < Wrap.Children.Count - 1) {
+                Selected.RemoveAt(cInd);
+                Wrap.Children.RemoveAt(cInd);
+            }
+        } else {
+            int cInd = Wrap.Children.IndexOf(c);
+
+            if (cInd == Wrap.Children.Count - 1) {
+                Selected.Add(s);
+                AddComboBox(null);
+            } else {
+                Selected[cInd] = s;
+            }
+        }
     }
 
     private ComboBox AddComboBox(string? selected) {
@@ -69,6 +70,8 @@ public partial class DropboxList : UserControl {
         }
 
         Wrap.Children.Add(c);
+
+        c.SelectionChanged += ComboBox_SelectionChanged;
 
         return c;
     }
