@@ -24,6 +24,7 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+#if !DEBUG
         // Non-UI thread exceptions
         AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
         {
@@ -37,6 +38,7 @@ public partial class App : Application
             Console.WriteLine($"AVALONIA: Task unobserved: {e.Exception.Message}");
             e.SetObserved();
         };
+#endif
 
         IServiceCollection services = new ServiceCollection()
             .InjectCommonServices();
