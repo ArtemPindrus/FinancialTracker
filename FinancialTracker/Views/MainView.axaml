@@ -14,14 +14,17 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-	<ui:NavigationView PaneDisplayMode="LeftCompact"
-                    SelectedItem="{Binding SelectedNavigationItem}">
+	<ui:NavigationView PaneDisplayMode="LeftMinimal"
+                       SelectedItem="{Binding SelectedNavigationItem}">
 		<ui:NavigationView.MenuItems>
             <ui:NavigationViewItem Content="Finances" />
             <ui:NavigationViewItem Content="Raw Query" />
         </ui:NavigationView.MenuItems>
 
-        <ContentControl Content="{Binding ViewModel}" />
+        <Grid RowDefinitions="50, *">
+			<ContentControl Content="{Binding ViewModel}" 
+                            Grid.Row="1" />
+        </Grid>
     </ui:NavigationView>
 
 </UserControl>

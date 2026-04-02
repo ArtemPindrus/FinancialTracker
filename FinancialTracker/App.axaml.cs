@@ -1,17 +1,17 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
-using System.Linq;
 using Avalonia.Markup.Xaml;
+using FinancialTracker.Services;
 using FinancialTracker.ViewModels;
 using FinancialTracker.Views;
-using Microsoft.Extensions.DependencyInjection;
 using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
-using FinancialTracker.Services;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using FinancialTracket.DataAccessLayer.Models;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FinancialTracker;
 
@@ -24,17 +24,22 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        IConfigurationBuilder cb = new ConfigurationBuilder();
+        // Non-UI thread exceptions
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        {
+            var ex = e.ExceptionObject as Exception;
+            Console.WriteLine($"AVALONIA: AppDomain unhandled: {ex?.Message}");
+        };
 
-#if DEBUG
-        cb.AddJsonFile("appsettings.Development.json");
-#else
-        cb.AddJsonFile("appsettings.json");
-#endif
+        // Unobserved Task exceptions
+        TaskScheduler.UnobservedTaskException += (sender, e) =>
+        {
+            Console.WriteLine($"AVALONIA: Task unobserved: {e.Exception.Message}");
+            e.SetObserved();
+        };
 
-        IConfiguration configuration = cb.Build();
-
-        string connectionString = configuration.GetConnectionString("DefaultConnection");
+        string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "finances.db");
+        string connectionString = $"Data Source={dbPath}";
 
         IServiceCollection services = new ServiceCollection();
         services.AddDbContext<AppDbContext>(x => x.UseSqlite(connectionString));
@@ -47,34 +52,7 @@ public partial class App : Application
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         AppDbContext db = serviceProvider.GetRequiredService<AppDbContext>();
-
-#if DEBUG
-        //db.Database.EnsureDeleted();
-        //db.Database.EnsureCreated();
-
-        //Tag groceries = new() { Name = "Groceries" };
-        //Tag gaming = new() { Name = "Gaming" };
-
-        //Finance f = new()
-        //{
-        //    Name = "Grocery shopping",
-        //    Amount = 150.75m,
-        //    Date = DateOnly.FromDateTime(DateTime.Now),
-        //    Tags = [groceries]
-        //};
-
-        //Finance g = new()
-        //{
-        //    Name = "Zeno Clash",
-        //    Amount = 59.99m,
-        //    Date = DateOnly.FromDateTime(DateTime.Now),
-        //    Tags = [gaming]
-        //};
-
-        //db.Add(f);
-        //db.Add(g);
-        //db.SaveChanges();
-#endif
+        db.Database.EnsureCreated();
 
         MainViewModel mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
 

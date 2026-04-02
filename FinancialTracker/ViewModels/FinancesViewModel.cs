@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Models;
 using FinancialTracket.DataAccessLayer;
 using FinancialTracket.DataAccessLayer.Models;
