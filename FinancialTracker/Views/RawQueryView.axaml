@@ -6,20 +6,22 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FinancialTracker.Views.RawQueryView"
              x:DataType="viewmodels:RawQueryViewModel">
-    <StackPanel>
-		<TextBox AcceptsReturn="True" 
-                 AcceptsTab="True" 
-                 Text="{Binding Query}"
-                 TextInputOptions.Multiline="True"
-                 MinHeight="300"/>
+    <ScrollViewer>
+		<StackPanel>
+		    <TextBox AcceptsReturn="True" 
+                     AcceptsTab="True" 
+                     Text="{Binding Query}"
+                     TextInputOptions.Multiline="True"
+                     MinHeight="300"/>
 
-        <StackPanel Orientation="Horizontal">
-            <Button Content="Execute" 
-                    Command="{Binding ExecuteQueryCommand}"/>
-            <Button Content="Query"
-                    Command="{Binding QueryCommand}"/>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Execute" 
+                        Command="{Binding ExecuteQueryCommand}"/>
+                <Button Content="Query"
+                        Command="{Binding QueryCommand}"/>
+            </StackPanel>
+
+            <ContentControl Content="{Binding ResultViewModel}"/>
         </StackPanel>
-
-        <ContentControl Content="{Binding ResultViewModel}"/>
-    </StackPanel>
+    </ScrollViewer>
 </UserControl>
