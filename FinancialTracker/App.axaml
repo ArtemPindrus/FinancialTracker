@@ -11,8 +11,8 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-		<sty:FluentAvaloniaTheme />
-		
         <!--<FluentTheme />-->
+
+		<sty:FluentAvaloniaTheme />
     </Application.Styles>
 </Application>

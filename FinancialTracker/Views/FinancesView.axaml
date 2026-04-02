@@ -1,14 +1,17 @@
 <UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:controls="using:FinancialTracker.Controls"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:FinancialTracker.Models"
              xmlns:viewmodels="using:FinancialTracker.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FinancialTracker.Views.FinancesView"
              x:DataType="viewmodels:FinancesViewModel">
     <StackPanel>
-		<DataGrid ItemsSource="{Binding Finances}"
-                  x:Name="Table">
+		<DataGrid ItemsSource="{Binding Finances, Mode=OneWay}"
+                  x:Name="Table"
+                  AutoGenerateColumns="False">
             <DataGrid.Styles>
 				<Style Selector="DataGridRow">
                     <Setter Property="ContextFlyout">
@@ -28,14 +31,23 @@
                                     Binding="{Binding Id}" 
                                     IsReadOnly="True"/>
 			    <DataGridTextColumn Header="Name" 
-                                    Binding="{Binding Name}" />
+                                    Binding="{Binding Name, UpdateSourceTrigger=LostFocus}" />
                 <DataGridTextColumn Header="Amount"
-                                    Binding="{Binding Amount}" />
+                                    Binding="{Binding Amount, UpdateSourceTrigger=LostFocus}" />
                 <DataGridTextColumn Header="Date"
-                                    Binding="{Binding Date}"/>
+                                    Binding="{Binding Date, UpdateSourceTrigger=LostFocus}"/>
+                <DataGridTemplateColumn Header="Tags">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate DataType="models:FinanceRecordDto">
+						    <controls:DropboxList ComboBoxItems="{Binding $parent[DataGrid].((viewmodels:FinancesViewModel)DataContext).Tags}"
+                                                  Selected="{Binding Tags}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
         <Button Content="Save" Command="{Binding SaveChangesCommand}"/>
+        <Button Content="Add" Command="{Binding AddDefaultRecordCommand}"/>
     </StackPanel>
 </UserControl>

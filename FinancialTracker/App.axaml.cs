@@ -49,20 +49,31 @@ public partial class App : Application
         AppDbContext db = serviceProvider.GetRequiredService<AppDbContext>();
 
 #if DEBUG
-        db.Database.EnsureDeleted();
-        db.Database.EnsureCreated();
+        //db.Database.EnsureDeleted();
+        //db.Database.EnsureCreated();
 
-        Tag groceries = new() { Name = "Groceries" };
-        Finance f = new()
-        {
-            Name = "Grocery shopping",
-            Amount = 150.75m,
-            Date = DateOnly.FromDateTime(DateTime.Now),
-            Tags = new[] { groceries }
-        };
+        //Tag groceries = new() { Name = "Groceries" };
+        //Tag gaming = new() { Name = "Gaming" };
 
-        db.Add(f);
-        db.SaveChanges();
+        //Finance f = new()
+        //{
+        //    Name = "Grocery shopping",
+        //    Amount = 150.75m,
+        //    Date = DateOnly.FromDateTime(DateTime.Now),
+        //    Tags = [groceries]
+        //};
+
+        //Finance g = new()
+        //{
+        //    Name = "Zeno Clash",
+        //    Amount = 59.99m,
+        //    Date = DateOnly.FromDateTime(DateTime.Now),
+        //    Tags = [gaming]
+        //};
+
+        //db.Add(f);
+        //db.Add(g);
+        //db.SaveChanges();
 #endif
 
         MainViewModel mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();

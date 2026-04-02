@@ -16,6 +16,10 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private ViewModelBase? viewModel;
 
+    public List<string?> Items { get; } = [null, "1", "2", "3"];
+
+    public List<string> Selected { get; } = ["1", "2"];
+
     public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator) {
         this.financesViewModelCreator = financesViewModelCreator;
     }

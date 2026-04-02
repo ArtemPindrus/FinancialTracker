@@ -6,19 +6,19 @@ using System.Linq;
 
 namespace FinancialTracker.Controls;
 
-public partial class DropboxList : UserControl {
+public partial class DropboxList : UserControl, IDisposable {
     public static readonly StyledProperty<List<string?>> ComboBoxItemsProperty =
         AvaloniaProperty.Register<DropboxList, List<string?>>(nameof(ComboBoxItems));
 
-    public static readonly StyledProperty<List<string>> SelectedProperty =
-        AvaloniaProperty.Register<DropboxList, List<string>>(nameof(Selected));
+    public static readonly StyledProperty<IList<string>> SelectedProperty =
+        AvaloniaProperty.Register<DropboxList, IList<string>>(nameof(Selected));
 
     public List<string?> ComboBoxItems {
         get => GetValue(ComboBoxItemsProperty);
         set => SetValue(ComboBoxItemsProperty, value);
     }
 
-    public List<string> Selected {
+    public IList<string> Selected {
         get => GetValue(SelectedProperty);
         set => SetValue(SelectedProperty, value);
     }
@@ -76,5 +76,11 @@ public partial class DropboxList : UserControl {
         c.SelectionChanged += ComboBox_SelectionChanged;
 
         return c;
+    }
+
+    public void Dispose() {
+        foreach (var c in Wrap.Children.Cast<ComboBox>()) {
+            c.SelectionChanged -= ComboBox_SelectionChanged;
+        }
     }
 }
