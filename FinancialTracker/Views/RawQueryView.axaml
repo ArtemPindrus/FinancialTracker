@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewmodels="using:FinancialTracker.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="FinancialTracker.Views.RawQueryView"
+             x:DataType="viewmodels:RawQueryViewModel">
+    <StackPanel>
+		<TextBox AcceptsReturn="True" 
+                 AcceptsTab="True" 
+                 Text="{Binding Query}"
+                 TextInputOptions.Multiline="True"
+                 MinHeight="300"/>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Execute" 
+                    Command="{Binding ExecuteQueryCommand}"/>
+            <Button Content="Query"
+                    Command="{Binding QueryCommand}"/>
+        </StackPanel>
+
+        <ContentControl Content="{Binding ResultViewModel}"/>
+    </StackPanel>
+</UserControl>

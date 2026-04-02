@@ -9,6 +9,7 @@ namespace FinancialTracker.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private IViewCreator<FinancesViewModel> financesViewModelCreator;
+    private IViewCreator<RawQueryViewModel> rawQueryViewModelCreator;
 
     [ObservableProperty]
     private NavigationViewItem? selectedNavigationItem;
@@ -20,13 +21,16 @@ public partial class MainViewModel : ViewModelBase
 
     public List<string> Selected { get; } = ["1", "2"];
 
-    public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator) {
+    public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator, 
+        IViewCreator<RawQueryViewModel> rawQueryViewModelCreator) {
         this.financesViewModelCreator = financesViewModelCreator;
+        this.rawQueryViewModelCreator = rawQueryViewModelCreator;
     }
 
     partial void OnSelectedNavigationItemChanged(NavigationViewItem? value) {
-        ViewModelBase vm = value switch {
-            { Content: "Finances" } => financesViewModelCreator.Create(),
+        ViewModelBase vm = value.Content switch {
+            "Finances" => financesViewModelCreator.Create(),
+            "Raw Query" => rawQueryViewModelCreator.Create(),
             _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{value?.Content}'")
         };
 
