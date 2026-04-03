@@ -14,25 +14,25 @@
             <Button Content="Add" Command="{Binding AddDefaultRecordCommand}"/>
         </StackPanel>
 
-		<DataGrid ItemsSource="{Binding Finances, Mode=OneWay}"
+		<controls:NotifyingDataGrid ItemsSource="{Binding Finances, Mode=OneWay}"
                   x:Name="Table"
                   AutoGenerateColumns="False"
+                  SelectedItemsBinding="{Binding SelectedFinances, Mode=OneWayToSource}"
                   Grid.Row="1">
-            <DataGrid.Styles>
+            <controls:NotifyingDataGrid.Styles>
 				<Style Selector="DataGridRow">
                     <Setter Property="ContextFlyout">
                         <MenuFlyout>
 							<MenuFlyout.Items>
                                 <MenuItem Header="Delete" 
-                                          Command="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).DeleteRecordCommand}" 
-                                          CommandParameter="{Binding}" />
+                                          Command="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).DeleteRecordCommand}" />
                             </MenuFlyout.Items>
                         </MenuFlyout>
                     </Setter>
                 </Style>
-            </DataGrid.Styles>
+            </controls:NotifyingDataGrid.Styles>
 
-            <DataGrid.Columns>
+            <controls:NotifyingDataGrid.Columns>
                 <DataGridTextColumn Header="Id"
                                     Binding="{Binding Id}" 
                                     IsReadOnly="True"/>
@@ -51,7 +51,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+            </controls:NotifyingDataGrid.Columns>
+        </controls:NotifyingDataGrid>
     </Grid>
 </UserControl>

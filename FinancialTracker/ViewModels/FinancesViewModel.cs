@@ -4,6 +4,7 @@ using FinancialTracket.DataAccessLayer;
 using FinancialTracket.DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,7 +14,12 @@ namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : ViewModelBase {
         private readonly AppDbContext dbContext;
 
-        public ObservableCollection<FinanceRecordDto> Finances { get; } = new();
+        public ObservableCollection<FinanceRecordDto> Finances { get; } = [];
+
+        public IList SelectedFinances { 
+            get; 
+            set; 
+        }
 
         public List<string> Tags { get; }
 
@@ -63,8 +69,10 @@ namespace FinancialTracker.ViewModels {
         }
 
         [RelayCommand]
-        private async Task DeleteRecordAsync(FinanceRecordDto finance) {
-            dbContext.Finances.Remove(dbContext.Finances.Where(x => x.Id == finance.Id).Single());
+        private async Task DeleteRecordAsync() {
+            foreach (FinanceRecordDto i in SelectedFinances) {
+                dbContext.Finances.Remove(dbContext.Finances.Where(x => x.Id == i.Id).Single());
+            }
 
             await CommitChanges();
         }
