@@ -8,10 +8,16 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FinancialTracker.Views.FinancesView"
              x:DataType="viewmodels:FinancesViewModel">
-    <StackPanel>
+    <Grid RowDefinitions="Auto, *">
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Save" Command="{Binding SaveChangesCommand}"/>
+            <Button Content="Add" Command="{Binding AddDefaultRecordCommand}"/>
+        </StackPanel>
+
 		<DataGrid ItemsSource="{Binding Finances, Mode=OneWay}"
                   x:Name="Table"
-                  AutoGenerateColumns="False">
+                  AutoGenerateColumns="False"
+                  Grid.Row="1">
             <DataGrid.Styles>
 				<Style Selector="DataGridRow">
                     <Setter Property="ContextFlyout">
@@ -46,8 +52,5 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-
-        <Button Content="Save" Command="{Binding SaveChangesCommand}"/>
-        <Button Content="Add" Command="{Binding AddDefaultRecordCommand}"/>
-    </StackPanel>
+    </Grid>
 </UserControl>

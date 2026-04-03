@@ -28,13 +28,45 @@ public partial class DropboxList : UserControl, IDisposable {
     }
 
     private void UserControl_Initialized(object? sender, EventArgs e) {
+        InitializeComboBoxes();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change) {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == SelectedProperty && ComboBoxItems is not null) {
+            InitializeComboBoxes();
+        }
+    }
+
+    private void InitializeComboBoxes() {
         if (!ComboBoxItems.Contains(null)) ComboBoxItems.Insert(0, null);
+
+        DisposeOfWrapChildren();
 
         foreach (var i in Selected) {
             AddComboBox(i);
         }
 
         AddComboBox(null);
+    }
+
+    private ComboBox AddComboBox(string? selected) {
+        ComboBox c = new() {
+            ItemsSource = ComboBoxItems
+        };
+
+        if (selected is not null) {
+            if (!ComboBoxItems.Contains(selected)) throw new ArgumentException($"Selected was not in the possible values.");
+
+            c.SelectedIndex = ComboBoxItems.IndexOf(selected);
+        }
+
+        Wrap.Children.Add(c);
+
+        c.SelectionChanged += ComboBox_SelectionChanged;
+
+        return c;
     }
 
     private void ComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
@@ -60,23 +92,14 @@ public partial class DropboxList : UserControl, IDisposable {
         }
     }
 
-    private ComboBox AddComboBox(string? selected) {
-        ComboBox c = new() {
-            ItemsSource = ComboBoxItems
-        };
-
-        if (selected is not null) {
-            if (!ComboBoxItems.Contains(selected)) throw new ArgumentException($"Selected was not in the possible values.");
-
-            c.SelectedIndex = ComboBoxItems.IndexOf(selected);
+    private void DisposeOfWrapChildren() {
+        foreach (var c in Wrap.Children.Cast<ComboBox>()) {
+            c.SelectionChanged -= ComboBox_SelectionChanged;
         }
 
-        Wrap.Children.Add(c);
-
-        c.SelectionChanged += ComboBox_SelectionChanged;
-
-        return c;
+        Wrap.Children.Clear();
     }
+
 
     public void Dispose() {
         foreach (var c in Wrap.Children.Cast<ComboBox>()) {
