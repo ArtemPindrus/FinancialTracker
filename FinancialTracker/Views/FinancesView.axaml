@@ -26,6 +26,10 @@
 							<MenuFlyout.Items>
                                 <MenuItem Header="Delete" 
                                           Command="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).DeleteRecordCommand}" />
+                                <MenuItem Header="Add tag"
+                                          ItemsSource="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).AddTagsMenuItems}"/>
+                                <MenuItem Header="Remove tag"
+                                          ItemsSource="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).RemoveTagsMenuItems}"/>
                             </MenuFlyout.Items>
                         </MenuFlyout>
                     </Setter>

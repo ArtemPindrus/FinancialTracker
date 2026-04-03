@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace FinancialTracker.Controls;
@@ -29,14 +31,33 @@ public partial class DropboxList : UserControl, IDisposable {
 
     private void UserControl_Initialized(object? sender, EventArgs e) {
         InitializeComboBoxes();
+
+        if (Selected is ObservableCollection<string> observableSelectedNew) {
+            observableSelectedNew.CollectionChanged += ObservableSelected_CollectionChanged;
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change) {
         base.OnPropertyChanged(change);
 
         if (change.Property == SelectedProperty && ComboBoxItems is not null) {
+            // unregister
+            object? oldValue = change.OldValue;
+
+            if (oldValue is ObservableCollection<string> observableSelectedOld) {
+                observableSelectedOld.CollectionChanged -= ObservableSelected_CollectionChanged;
+            }
+
             InitializeComboBoxes();
+
+            if (Selected is ObservableCollection<string> observableSelectedNew) {
+                observableSelectedNew.CollectionChanged += ObservableSelected_CollectionChanged;
+            }
         }
+    }
+
+    private void ObservableSelected_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+        InitializeComboBoxes();
     }
 
     private void InitializeComboBoxes() {
@@ -78,14 +99,12 @@ public partial class DropboxList : UserControl, IDisposable {
 
             if (cInd < Wrap.Children.Count - 1) {
                 Selected.RemoveAt(cInd);
-                Wrap.Children.RemoveAt(cInd);
             }
         } else {
             int cInd = Wrap.Children.IndexOf(c);
 
             if (cInd == Wrap.Children.Count - 1) {
                 Selected.Add(s);
-                AddComboBox(null);
             } else {
                 Selected[cInd] = s;
             }

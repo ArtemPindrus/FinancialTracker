@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using Avalonia.Controls;
+using Avalonia.Data;
+using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Models;
 using FinancialTracket.DataAccessLayer;
 using FinancialTracket.DataAccessLayer.Models;
@@ -9,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : ViewModelBase {
@@ -23,11 +26,34 @@ namespace FinancialTracker.ViewModels {
 
         public List<string> Tags { get; }
 
+        public List<MenuItem> AddTagsMenuItems { 
+            get; 
+        } = [];
+
+        public List<MenuItem> RemoveTagsMenuItems {
+            get;
+        } = [];
+
         public FinancesViewModel(AppDbContext dbContext) {
             this.dbContext = dbContext;
             Tags = dbContext.Tags.Select(x => x.Name).ToList();
 
+            InitializeTagMenu(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
+            InitializeTagMenu(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
+
             PopulateTable();
+        }
+
+        private void InitializeTagMenu(List<MenuItem> menu, ICommand command) {
+            foreach (var t in Tags) {
+                MenuItem m = new() {
+                    Header = t,
+                    Command = command,
+                    CommandParameter = t
+                };
+
+                menu.Add(m);
+            }
         }
 
         private void PopulateTable() {
@@ -42,6 +68,20 @@ namespace FinancialTracker.ViewModels {
 
             foreach (var i in finances) {
                 Finances.Add(i);
+            }
+        }
+
+        [RelayCommand]
+        private void AddTagToSelectedRecords(string tag) {
+            foreach (FinanceRecordDto f in SelectedFinances) {
+                f.Tags.Add(tag);
+            }
+        }
+
+        [RelayCommand]
+        private void RemoveTagFromSelectedRecords(string tag) {
+            foreach (FinanceRecordDto f in SelectedFinances) {
+                f.Tags.Remove(tag);
             }
         }
 
@@ -62,7 +102,7 @@ namespace FinancialTracker.ViewModels {
                 f.Date = m.Date;
                 f.Tags = dbContext.Tags
                     .Where(t => m.Tags.Contains(t.Name))
-                    .ToArray();
+                    .ToList();
             }
 
             await CommitChanges();
