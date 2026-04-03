@@ -41,6 +41,7 @@
                 <DataGridTextColumn Header="Amount"
                                     Binding="{Binding Amount, UpdateSourceTrigger=LostFocus}" />
                 <DataGridTextColumn Header="Date"
+                                    IsReadOnly="False"
                                     Binding="{Binding Date, UpdateSourceTrigger=LostFocus}"/>
                 <DataGridTemplateColumn Header="Tags">
 					<DataGridTemplateColumn.CellTemplate>
