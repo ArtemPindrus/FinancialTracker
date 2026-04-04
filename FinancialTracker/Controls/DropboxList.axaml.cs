@@ -104,6 +104,7 @@ public partial class DropboxList : UserControl {
     private void AddComboBox(string? selected) {
         FAComboBox c = new() {
             ItemsSource = ComboBoxItems,
+            IsTextSearchEnabled = true,
         };
 
         if (selected is not null) {
