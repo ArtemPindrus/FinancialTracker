@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -8,7 +10,9 @@ using System.Linq;
 
 namespace FinancialTracker.Controls;
 
-public partial class DropboxList : UserControl, IDisposable {
+public partial class DropboxList : UserControl {
+    private readonly ComboBoxesList comboBoxesList;
+
     public static readonly StyledProperty<List<string?>> ComboBoxItemsProperty =
         AvaloniaProperty.Register<DropboxList, List<string?>>(nameof(ComboBoxItems));
 
@@ -27,13 +31,15 @@ public partial class DropboxList : UserControl, IDisposable {
 
     public DropboxList() {
         InitializeComponent();
+
+        comboBoxesList = new(Wrap);
     }
 
     private void UserControl_Initialized(object? sender, EventArgs e) {
         InitializeComboBoxes();
 
         if (Selected is ObservableCollection<string> observableSelectedNew) {
-            observableSelectedNew.CollectionChanged += ObservableSelected_CollectionChanged;
+            observableSelectedNew.CollectionChanged += Selected_CollectionChanged;
         }
     }
 
@@ -43,37 +49,60 @@ public partial class DropboxList : UserControl, IDisposable {
         if (change.Property == SelectedProperty && ComboBoxItems is not null) {
             object? oldValue = change.OldValue;
 
-            if (oldValue is ObservableCollection<string> observableSelectedOld) {
-                observableSelectedOld.CollectionChanged -= ObservableSelected_CollectionChanged;
+            if (oldValue is ObservableCollection<string> selectedOld) {
+                selectedOld.CollectionChanged -= Selected_CollectionChanged;
             }
 
             InitializeComboBoxes();
 
-            if (Selected is ObservableCollection<string> observableSelectedNew) {
-                observableSelectedNew.CollectionChanged += ObservableSelected_CollectionChanged;
+            if (Selected is ObservableCollection<string> selectedNew) {
+                selectedNew.CollectionChanged += Selected_CollectionChanged;
             }
         }
     }
 
-    private void ObservableSelected_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+    private void Selected_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
         InitializeComboBoxes();
     }
 
     private void InitializeComboBoxes() {
         if (!ComboBoxItems.Contains(null)) ComboBoxItems.Insert(0, null);
 
-        DisposeOfWrapChildren();
-
-        foreach (var i in Selected) {
-            AddComboBox(i);
+        foreach (var c in comboBoxesList) {
+            c.IsVisible = false;
         }
 
-        AddComboBox(null);
+        int boxesLeft = comboBoxesList.Count;
+        for (int i = 0; i < Selected.Count; i++) {
+            string? s = Selected[i];
+
+            if (s is null) break;
+
+            if (boxesLeft > 0) {
+                FAComboBox c = comboBoxesList[i];
+                c.IsVisible = true;
+
+                c.SelectionChanged -= ComboBox_SelectionChanged;
+                c.SelectedIndex = ComboBoxItems.IndexOf(s);
+                c.SelectionChanged += ComboBox_SelectionChanged;
+
+                boxesLeft--;
+            } else {
+                AddComboBox(s);
+            }
+        }
+
+        if (boxesLeft == 0) AddComboBox(null);
+        else {
+            FAComboBox c = comboBoxesList[Selected.Count];
+            c.IsVisible = true;
+            c.SelectedIndex = 0;
+        }
     }
 
-    private ComboBox AddComboBox(string? selected) {
-        ComboBox c = new() {
-            ItemsSource = ComboBoxItems
+    private void AddComboBox(string? selected) {
+        FAComboBox c = new() {
+            ItemsSource = ComboBoxItems,
         };
 
         if (selected is not null) {
@@ -82,46 +111,48 @@ public partial class DropboxList : UserControl, IDisposable {
             c.SelectedIndex = ComboBoxItems.IndexOf(selected);
         }
 
-        Wrap.Children.Add(c);
+        comboBoxesList.AddComboBox(c);
 
         c.SelectionChanged += ComboBox_SelectionChanged;
-
-        return c;
     }
 
     private void ComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        ComboBox? c = (ComboBox)sender;
+        if (sender is not FAComboBox c) return;
+                
+        int cInd = comboBoxesList.IndexOf(c);
 
         string? s = (string?)e.AddedItems[0];
-        if (s == null) {
-            int cInd = Wrap.Children.IndexOf(c);
+        
+        if (Selected.Count > cInd) {
+            if (s is null) Selected.RemoveAt(cInd);
+            else Selected[cInd] = s;
+        } else if(s is not null) Selected.Add(s);
+    }
+}
 
-            if (cInd < Wrap.Children.Count - 1) {
-                Selected.RemoveAt(cInd);
-            }
-        } else {
-            int cInd = Wrap.Children.IndexOf(c);
+public class ComboBoxesList : IEnumerable<FAComboBox> {
+    private readonly Avalonia.Controls.Controls boxes;
 
-            if (cInd == Wrap.Children.Count - 1) {
-                Selected.Add(s);
-            } else {
-                Selected[cInd] = s;
-            }
-        }
+    public FAComboBox this[int index] {
+        get => (FAComboBox)boxes[index];
+        set => boxes[index] = value;
     }
 
-    private void DisposeOfWrapChildren() {
-        foreach (var c in Wrap.Children.Cast<ComboBox>()) {
-            c.SelectionChanged -= ComboBox_SelectionChanged;
-        }
+    public int Count => boxes.Count;
 
-        Wrap.Children.Clear();
+    public ComboBoxesList(WrapPanel wrap) {
+        boxes = wrap.Children;
     }
 
+    public void AddComboBox(FAComboBox comboBox) => boxes.Add(comboBox);
 
-    public void Dispose() {
-        foreach (var c in Wrap.Children.Cast<ComboBox>()) {
-            c.SelectionChanged -= ComboBox_SelectionChanged;
-        }
+    public void Clear() => boxes.Clear();
+
+    public int IndexOf(FAComboBox comboBox) => boxes.IndexOf(comboBox);
+
+    public IEnumerator<FAComboBox> GetEnumerator() => boxes.Cast<FAComboBox>().GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
     }
 }
