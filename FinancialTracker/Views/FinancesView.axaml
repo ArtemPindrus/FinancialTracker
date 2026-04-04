@@ -25,7 +25,7 @@
                         <MenuFlyout>
 							<MenuFlyout.Items>
                                 <MenuItem Header="Delete" 
-                                          Command="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).DeleteRecordCommand}" />
+                                          Command="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).MarkRecordDeletedCommand}" />
                                 <MenuItem Header="Add tag"
                                           ItemsSource="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).AddTagsMenuItems}"/>
                                 <MenuItem Header="Remove tag"
@@ -33,6 +33,11 @@
                             </MenuFlyout.Items>
                         </MenuFlyout>
                     </Setter>
+
+                    <Setter Property="Classes.IsDisabled" Value="{Binding $self.((models:FinanceRecordDto)DataContext).IsDeleted}"/>
+                </Style>
+                <Style Selector="DataGridRow.IsDisabled">
+                    <Setter Property="Foreground" Value="Gray"/>
                 </Style>
             </controls:NotifyingDataGrid.Styles>
 

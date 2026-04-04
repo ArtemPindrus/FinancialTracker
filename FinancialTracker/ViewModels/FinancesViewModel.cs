@@ -19,7 +19,7 @@ namespace FinancialTracker.ViewModels {
 
         public ObservableCollection<FinanceRecordDto> Finances { get; } = [];
 
-        public IList SelectedFinances { 
+        public IList? SelectedFinances { 
             get; 
             set; 
         }
@@ -57,12 +57,8 @@ namespace FinancialTracker.ViewModels {
         }
 
         private void PopulateTable() {
-            var finances = dbContext.Finances.Select(x => new FinanceRecordDto(x.Id,
-                x.Name,
-                x.Amount,
-                x.Date,
-                x.Tags.Select(t => t.Name).ToList())
-            ).ToList();
+            var finances = dbContext.Finances.Include(x => x.Tags).Select(x => new FinanceRecordDto(x))
+                .ToList();
 
             Finances.Clear();
 
@@ -73,6 +69,8 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private void AddTagToSelectedRecords(string tag) {
+            if (SelectedFinances is null) return;
+
             foreach (FinanceRecordDto f in SelectedFinances) {
                 f.Tags.Add(tag);
             }
@@ -80,6 +78,8 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private void RemoveTagFromSelectedRecords(string tag) {
+            if (SelectedFinances is null) return;
+
             foreach (FinanceRecordDto f in SelectedFinances) {
                 f.Tags.Remove(tag);
             }
@@ -87,9 +87,9 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private async Task SaveChangesAsync() {
-            // DELETE entities that were removed from the list
-            // find modified entities and update them
             var modified = Finances.Where(x => x.IsModified);
+            var added = Finances.Where(x => x.IsAdded);
+            var deleted = Finances.Where(x => x.IsDeleted);
 
             foreach (var m in modified) {
                 var f = dbContext.Finances
@@ -105,30 +105,45 @@ namespace FinancialTracker.ViewModels {
                     .ToList();
             }
 
-            await CommitChanges();
+            foreach (var a in added) {
+                var f = new Finance() {
+                    Name = a.Name,
+                    Amount = a.Amount,
+                    Date = a.Date,
+                    Tags = dbContext.Tags
+                        .Where(t => a.Tags.Contains(t.Name))
+                        .ToList()
+                };
+                dbContext.Finances.Add(f);
+            }
+
+            foreach (var d in deleted) {
+                var f = dbContext.Finances.Where(x => x.Id == d.Id).Single();
+                dbContext.Finances.Remove(f);
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            PopulateTable();
         }
 
         [RelayCommand]
-        private async Task DeleteRecordAsync() {
-            foreach (FinanceRecordDto i in SelectedFinances) {
-                dbContext.Finances.Remove(dbContext.Finances.Where(x => x.Id == i.Id).Single());
-            }
+        private void Rollback() {
+            PopulateTable();
+        }
 
-            await CommitChanges();
+        [RelayCommand]
+        private async Task MarkRecordDeletedAsync() {
+            if (SelectedFinances is null) return;
+
+            foreach (FinanceRecordDto i in SelectedFinances) {
+                i.IsDeleted = !i.IsDeleted;
+            }
         }
 
         [RelayCommand]
         private async Task AddDefaultRecordAsync() {
-            Finance f = new() { Name = "", Amount = 0, Date = DateOnly.FromDateTime(DateTime.Now), Tags = []};
-
-            dbContext.Add(f);
-            await CommitChanges();
-        }
-
-        private async Task CommitChanges() {
-            await dbContext.SaveChangesAsync();
-
-            PopulateTable();
+            Finances.Add(new FinanceRecordDto());
         }
     }
 }

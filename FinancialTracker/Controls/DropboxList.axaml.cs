@@ -41,7 +41,6 @@ public partial class DropboxList : UserControl, IDisposable {
         base.OnPropertyChanged(change);
 
         if (change.Property == SelectedProperty && ComboBoxItems is not null) {
-            // unregister
             object? oldValue = change.OldValue;
 
             if (oldValue is ObservableCollection<string> observableSelectedOld) {
