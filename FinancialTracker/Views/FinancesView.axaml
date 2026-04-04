@@ -12,6 +12,8 @@
         <StackPanel Orientation="Horizontal">
             <Button Content="Save" Command="{Binding SaveChangesCommand}"/>
             <Button Content="Add" Command="{Binding AddDefaultRecordCommand}"/>
+
+            <Button Content="Revert all" Command="{Binding RollbackCommand}"/>
         </StackPanel>
 
 		<controls:NotifyingDataGrid ItemsSource="{Binding Finances, Mode=OneWay}"
