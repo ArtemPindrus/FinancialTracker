@@ -68,7 +68,8 @@ public partial class DropboxList : UserControl {
     private void InitializeComboBoxes() {
         if (!ComboBoxItems.Contains(null)) ComboBoxItems.Insert(0, null);
 
-        foreach (var c in comboBoxesList) {
+        for (int i = Selected.Count; i < comboBoxesList.Count; i++) {
+            FAComboBox c = comboBoxesList[i];
             c.IsVisible = false;
         }
 
