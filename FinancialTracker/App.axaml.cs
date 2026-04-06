@@ -41,9 +41,7 @@ public partial class App : Application
         };
 #endif
 
-        IConfiguration config = new ConfigurationBuilder()
-            .UseCommonConfiguration()
-            .Build();
+        IConfiguration config = AppConfig.BuildDefaultConfiguration();
 
         IServiceCollection services = new ServiceCollection()
             .InjectCommonServices(config);

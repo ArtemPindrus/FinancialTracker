@@ -15,6 +15,8 @@ public class MainActivity : AvaloniaMainActivity<App>
 {
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
+        AppConfig.DefaultConfigurationBuilder.UseCommonConfiguration();
+
         return base.CustomizeAppBuilder(builder)
             .WithInterFont();
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia;
+using FinancialTracker.Android;
 
 namespace FinancialTracker.Desktop;
 
@@ -13,9 +14,12 @@ sealed class Program
         .StartWithClassicDesktopLifetime(args);
 
     // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    public static AppBuilder BuildAvaloniaApp() {
+        AppConfig.DefaultConfigurationBuilder.UseCommonConfiguration();
+
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();
+    }
 }
