@@ -27,11 +27,15 @@ public partial class MainViewModel : ViewModelBase
         this.rawQueryViewModelCreator = rawQueryViewModelCreator;
     }
 
-    partial void OnSelectedNavigationItemChanged(NavigationViewItem? value) {
-        ViewModelBase vm = value.Content switch {
+    partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
+        if (oldValue is IDisposable oldDisp) {
+            oldDisp.Dispose();
+        }
+
+        ViewModelBase vm = newValue.Content switch {
             "Finances" => financesViewModelCreator.Create(),
             "Raw Query" => rawQueryViewModelCreator.Create(),
-            _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{value?.Content}'")
+            _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newValue?.Content}'")
         };
 
         ViewModel = vm;

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels {
-    public partial class FinancesViewModel : ViewModelBase {
+    public partial class FinancesViewModel : ViewModelBase, IDisposable {
         private readonly AppDbContext dbContext;
 
         public ObservableCollection<FinanceRecordDto> Finances { get; } = [];
@@ -42,6 +42,12 @@ namespace FinancialTracker.ViewModels {
             InitializeTagMenu(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
 
             PopulateTable();
+        }
+
+        public void Dispose() {
+            dbContext.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         private void InitializeTagMenu(List<MenuItem> menu, ICommand command) {

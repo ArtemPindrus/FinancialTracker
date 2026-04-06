@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace FinancialTracker.ViewModels {
-    public partial class RawQueryViewModel : ViewModelBase {
+    public partial class RawQueryViewModel : ViewModelBase, IDisposable {
         private readonly AppDbContext dbContext;
 
         [ObservableProperty]
@@ -23,6 +23,12 @@ namespace FinancialTracker.ViewModels {
         }
 
         public string? Query { get; set; }
+
+        public void Dispose() {
+            dbContext.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
 
         [RelayCommand]
         private async Task ExecuteQueryAsync() {
