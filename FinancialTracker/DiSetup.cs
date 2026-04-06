@@ -2,15 +2,13 @@
 using FinancialTracker.ViewModels;
 using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.IO;
 
 namespace FinancialTracker {
     public static class DiSetup {
-        public static IServiceCollection InjectCommonServices(this IServiceCollection services) {
-            string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "finances.db");
-            string connectionString = $"Data Source={dbPath}";
+        public static IServiceCollection InjectCommonServices(this IServiceCollection services, IConfiguration config) {
+            string connectionString = $"Data Source={config.GetDatabasePath()}";
 
             services.AddDbContext<AppDbContext>(x => x.UseSqlite(connectionString));
 
@@ -20,6 +18,7 @@ namespace FinancialTracker {
 
             services.AddSingleton<IViewCreator<FinancesViewModel>, ViewCreator<FinancesViewModel>>();
             services.AddSingleton<IViewCreator<RawQueryViewModel>, ViewCreator<RawQueryViewModel>>();
+            services.AddSingleton(config);
 
             return services;
         }

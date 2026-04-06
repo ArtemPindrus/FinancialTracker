@@ -7,6 +7,7 @@ using FinancialTracker.ViewModels;
 using FinancialTracker.Views;
 using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
@@ -40,13 +41,18 @@ public partial class App : Application
         };
 #endif
 
+        IConfiguration config = new ConfigurationBuilder()
+            .UseCommonConfiguration()
+            .Build();
+
         IServiceCollection services = new ServiceCollection()
-            .InjectCommonServices();
+            .InjectCommonServices(config);
 
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        AppDbContext db = serviceProvider.GetRequiredService<AppDbContext>();
-        db.Database.EnsureCreated();
+        using (AppDbContext db = serviceProvider.GetRequiredService<AppDbContext>()) {
+            db.Database.EnsureCreated();
+        }
 
         MainViewModel mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
 
