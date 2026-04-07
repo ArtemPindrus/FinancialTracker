@@ -106,18 +106,23 @@ namespace FinancialTracker.ViewModels {
                 f.Name = m.Name;
                 f.Amount = m.Amount;
                 f.Date = m.Date;
+
+                await AddMissingTagsToDatabaseAsync(m);
+
                 f.Tags = dbContext.Tags
-                    .Where(t => m.Tags.Contains(t.Name))
+                    .Where(t => m.Tags.Select(x => x.ToLower()).Contains(t.Name.ToLower()))
                     .ToList();
             }
 
             foreach (var a in added) {
+                await AddMissingTagsToDatabaseAsync(a);
+
                 var f = new Finance() {
                     Name = a.Name,
                     Amount = a.Amount,
                     Date = a.Date,
                     Tags = dbContext.Tags
-                        .Where(t => a.Tags.Contains(t.Name))
+                        .Where(t => a.Tags.Select(x => x.ToLower()).Contains(t.Name))
                         .ToList()
                 };
                 dbContext.Finances.Add(f);
@@ -131,6 +136,23 @@ namespace FinancialTracker.ViewModels {
             await dbContext.SaveChangesAsync();
 
             PopulateTable();
+        }
+
+        private async Task AddMissingTagsToDatabaseAsync(FinanceRecordDto fr) {
+            var existingTagsNames = dbContext.Tags
+                .Select(t => t.Name.ToLower())
+                .ToList();
+
+            var recordTags = fr.Tags
+                .Select(x => x.ToLower());
+
+            IEnumerable<Tag> absentTags = recordTags
+                .Where(x => !existingTagsNames.Contains(x.ToLower()))
+                .Distinct()
+                .Select(x => new Tag() { Name = x });
+            await dbContext.Tags.AddRangeAsync(absentTags);
+
+            await dbContext.SaveChangesAsync();
         }
 
         [RelayCommand]
