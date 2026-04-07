@@ -6,6 +6,8 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
 
@@ -19,8 +21,8 @@ public partial class TagsList : UserControl
     public static readonly StyledProperty<List<string>> TagsProperty =
         AvaloniaProperty.Register<TagsList, List<string>>(nameof(Tags));
 
-    public static readonly StyledProperty<IList<string>> SelectedTagsProperty =
-        AvaloniaProperty.Register<TagsList, IList<string>>(nameof(SelectedTags));
+    public static readonly StyledProperty<ObservableCollection<string>> SelectedTagsProperty =
+        AvaloniaProperty.Register<TagsList, ObservableCollection<string>>(nameof(SelectedTags));
 
     public List<string> Tags
     {
@@ -28,7 +30,7 @@ public partial class TagsList : UserControl
         set => SetValue(TagsProperty, value);
     }
 
-    public IList<string> SelectedTags {
+    public ObservableCollection<string> SelectedTags {
         get => GetValue(SelectedTagsProperty);
         set => SetValue(SelectedTagsProperty, value);
     }
@@ -51,8 +53,20 @@ public partial class TagsList : UserControl
         base.OnPropertyChanged(change);
 
         if (change.Property == SelectedTagsProperty) {
+            if (change.OldValue is ObservableCollection<string> oldSelectedTags) {
+                oldSelectedTags.CollectionChanged -= NewSelectedTags_CollectionChanged;
+            }
+
             UpdateList();
+
+            if (change.NewValue is ObservableCollection<string> newSelectedTags) {
+                newSelectedTags.CollectionChanged += NewSelectedTags_CollectionChanged;
+            }
         }
+    }
+
+    private void NewSelectedTags_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+        UpdateList();
     }
 
     private void UpdateList() {
@@ -99,7 +113,6 @@ public partial class TagsList : UserControl
             if (hanging.InnerRightContent is Button b) b.IsVisible = true;
 
             SelectedTags.Add(hanging.Text);
-            UpdateList();
         });
 
         KeyBinding enterKey = new() {
@@ -112,11 +125,12 @@ public partial class TagsList : UserControl
 
     private void DeleteTagAt(int i) {
         SelectedTags.RemoveAt(i);
-        UpdateList();
     }
 }
 
 public class WrapChildrenWrapper : IEnumerable<AutoCompleteBox> {
+    private const int BindingDelay = 300;
+
     private readonly WrapPanel wrap;
     private IEnumerable<string>? itemsSource;
     private object? dataContext;
@@ -167,7 +181,7 @@ public class WrapChildrenWrapper : IEnumerable<AutoCompleteBox> {
                 ItemsSource = itemsSource,
             };
 
-            var binding = new Binding($"[{i}]");
+            var binding = new Binding($"[{i}]") { Delay = BindingDelay };
             ab.Bind(AutoCompleteBox.TextProperty, binding);
 
             AddChild(ab);
