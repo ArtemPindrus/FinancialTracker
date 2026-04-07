@@ -57,8 +57,8 @@
                 <DataGridTemplateColumn Header="Tags">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate DataType="models:FinanceRecordDto">
-						    <controls:DropboxList ComboBoxItems="{Binding $parent[DataGrid].((viewmodels:FinancesViewModel)DataContext).Tags}"
-                                                  Selected="{Binding Tags}"/>
+						    <controls:TagsList Tags="{Binding $parent[DataGrid].((viewmodels:FinancesViewModel)DataContext).Tags}"
+                                               SelectedTags="{Binding Tags}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
