@@ -45,13 +45,17 @@
 
             <controls:NotifyingDataGrid.Columns>
                 <DataGridTextColumn Header="Id"
+                                    x:DataType="models:FinanceRecordDto"
                                     Binding="{Binding Id}" 
                                     IsReadOnly="True"/>
 			    <DataGridTextColumn Header="Name" 
+                                    x:DataType="models:FinanceRecordDto"
                                     Binding="{Binding Name, UpdateSourceTrigger=LostFocus}" />
                 <DataGridTextColumn Header="Amount"
+                                    x:DataType="models:FinanceRecordDto"
                                     Binding="{Binding Amount, UpdateSourceTrigger=LostFocus}" />
                 <DataGridTextColumn Header="Date"
+                                    x:DataType="models:FinanceRecordDto"
                                     IsReadOnly="False"
                                     Binding="{Binding Date, UpdateSourceTrigger=LostFocus}"/>
                 <DataGridTemplateColumn Header="Tags">
