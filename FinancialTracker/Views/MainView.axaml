@@ -24,6 +24,12 @@
                     <ui:NavigationViewItem Content="Yearly Expenses"/>
                 </ui:NavigationViewItem.MenuItems>
             </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="Sync" SelectsOnInvoked="False">
+                <ui:NavigationViewItem.MenuItems>
+                    <ui:NavigationViewItem Content="Upload" />
+                    <ui:NavigationViewItem Content="Download" />
+                </ui:NavigationViewItem.MenuItems>
+            </ui:NavigationViewItem>
         </ui:NavigationView.MenuItems>
 
         <Grid RowDefinitions="50, *">

@@ -11,6 +11,8 @@ public partial class MainViewModel : ViewModelBase
     private IViewCreator<FinancesViewModel> financesViewModelCreator;
     private IViewCreator<RawQueryViewModel> rawQueryViewModelCreator;
     private IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator;
+    private readonly IViewCreator<DownloadViewModel> downloadViewModelCreator;
+    private readonly IViewCreator<UploadViewModel> uploadViewModelCreator;
 
     [ObservableProperty]
     private NavigationViewItem? selectedNavigationItem;
@@ -24,10 +26,14 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator,
         IViewCreator<RawQueryViewModel> rawQueryViewModelCreator,
-        IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator) {
+        IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator,
+        IViewCreator<DownloadViewModel> downloadViewModelCreator,
+        IViewCreator<UploadViewModel> uploadViewModelCreator) {
         this.financesViewModelCreator = financesViewModelCreator;
         this.rawQueryViewModelCreator = rawQueryViewModelCreator;
         this.yearlyExpensesViewModelCreator = yearlyExpensesViewModelCreator;
+        this.downloadViewModelCreator = downloadViewModelCreator;
+        this.uploadViewModelCreator = uploadViewModelCreator;
     }
 
     partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
@@ -44,6 +50,8 @@ public partial class MainViewModel : ViewModelBase
             "Finances" => financesViewModelCreator.Create(),
             "Raw Query" => rawQueryViewModelCreator.Create(),
             "Yearly Expenses" => yearlyExpensesViewModelCreator.Create(),
+            "Download" => downloadViewModelCreator.Create(),
+            "Upload" => uploadViewModelCreator.Create(),
             _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newValue?.Content}'")
         };
 
