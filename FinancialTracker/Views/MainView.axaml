@@ -19,6 +19,11 @@
 		<ui:NavigationView.MenuItems>
             <ui:NavigationViewItem Content="Finances" />
             <ui:NavigationViewItem Content="Raw Query" />
+            <ui:NavigationViewItem Content="Charts" SelectsOnInvoked="False">
+                <ui:NavigationViewItem.MenuItems>
+                    <ui:NavigationViewItem Content="Yearly Expenses"/>
+                </ui:NavigationViewItem.MenuItems>
+            </ui:NavigationViewItem>
         </ui:NavigationView.MenuItems>
 
         <Grid RowDefinitions="50, *">

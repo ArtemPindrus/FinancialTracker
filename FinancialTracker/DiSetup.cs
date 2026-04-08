@@ -18,9 +18,11 @@ namespace FinancialTracker {
             services.AddTransient<FinancesViewModel>();
             services.AddTransient<MainViewModel>();
             services.AddTransient<RawQueryViewModel>();
+            services.AddTransient<YearlyExpensesViewModel>();
 
             services.AddSingleton<IViewCreator<FinancesViewModel>, ViewCreator<FinancesViewModel>>();
             services.AddSingleton<IViewCreator<RawQueryViewModel>, ViewCreator<RawQueryViewModel>>();
+            services.AddSingleton<IViewCreator<YearlyExpensesViewModel>, ViewCreator<YearlyExpensesViewModel>>();
             services.AddSingleton(config);
 
             return services;

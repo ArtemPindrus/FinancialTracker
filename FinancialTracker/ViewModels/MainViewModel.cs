@@ -10,6 +10,7 @@ public partial class MainViewModel : ViewModelBase
 {
     private IViewCreator<FinancesViewModel> financesViewModelCreator;
     private IViewCreator<RawQueryViewModel> rawQueryViewModelCreator;
+    private IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator;
 
     [ObservableProperty]
     private NavigationViewItem? selectedNavigationItem;
@@ -21,10 +22,12 @@ public partial class MainViewModel : ViewModelBase
 
     public List<string> Selected { get; } = ["1", "2"];
 
-    public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator, 
-        IViewCreator<RawQueryViewModel> rawQueryViewModelCreator) {
+    public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator,
+        IViewCreator<RawQueryViewModel> rawQueryViewModelCreator,
+        IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator) {
         this.financesViewModelCreator = financesViewModelCreator;
         this.rawQueryViewModelCreator = rawQueryViewModelCreator;
+        this.yearlyExpensesViewModelCreator = yearlyExpensesViewModelCreator;
     }
 
     partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
@@ -32,9 +35,15 @@ public partial class MainViewModel : ViewModelBase
             oldDisp.Dispose();
         }
 
+        if (newValue is null) {
+            ViewModel = null;
+            return;
+        }
+
         ViewModelBase vm = newValue.Content switch {
             "Finances" => financesViewModelCreator.Create(),
             "Raw Query" => rawQueryViewModelCreator.Create(),
+            "Yearly Expenses" => yearlyExpensesViewModelCreator.Create(),
             _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newValue?.Content}'")
         };
 

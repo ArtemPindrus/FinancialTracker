@@ -2,17 +2,12 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using FinancialTracker.Services;
 using FinancialTracker.ViewModels;
 using FinancialTracker.Views;
 using FinancialTracket.DataAccessLayer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace FinancialTracker;
 

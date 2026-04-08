@@ -21,6 +21,7 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="FluentAvaloniaUI" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
@@ -32,6 +33,9 @@
   <ItemGroup>
     <Compile Update="Views\TextResultView.axaml.cs">
       <DependentUpon>TextResultView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\YearlyExpensesView.axaml.cs">
+      <DependentUpon>YearlyExpensesView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
