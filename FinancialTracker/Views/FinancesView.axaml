@@ -27,16 +27,18 @@
                         <MenuFlyout>
 							<MenuFlyout.Items>
                                 <MenuItem Header="Delete" 
-                                          Command="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).MarkRecordDeletedCommand}" />
+                                          Command="{Binding #Table.DataContext.MarkRecordDeletedCommand}" />
                                 <MenuItem Header="Add tag"
-                                          ItemsSource="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).AddTagsMenuItems}"/>
+                                          ItemsSource="{Binding #Table.DataContext.AddTagsMenuItems}"/>
                                 <MenuItem Header="Remove tag"
-                                          ItemsSource="{Binding #Table.((viewmodels:FinancesViewModel)DataContext).RemoveTagsMenuItems}"/>
+                                          ItemsSource="{Binding #Table.DataContext.RemoveTagsMenuItems}"/>
                             </MenuFlyout.Items>
                         </MenuFlyout>
                     </Setter>
 
-                    <Setter Property="Classes.IsDisabled" Value="{Binding $self.((models:FinanceRecordDto)DataContext).IsDeleted}"/>
+                    <Setter x:DataType="models:FinanceRecordDto" 
+                            Property="Classes.IsDisabled" 
+                            Value="{Binding IsDeleted}"/>
                 </Style>
                 <Style Selector="DataGridRow.IsDisabled">
                     <Setter Property="Foreground" Value="Gray"/>
@@ -61,7 +63,7 @@
                 <DataGridTemplateColumn Header="Tags">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate DataType="models:FinanceRecordDto">
-						    <controls:TagsList Tags="{Binding $parent[DataGrid].((viewmodels:FinancesViewModel)DataContext).Tags}"
+						    <controls:TagsList Tags="{Binding $parent[DataGrid].DataContext.Tags}"
                                                SelectedTags="{Binding Tags}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
