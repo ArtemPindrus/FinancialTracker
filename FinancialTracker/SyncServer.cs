@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Metadata;
+using CommunityToolkit.Mvvm.ComponentModel;
+using FinancialTracker.StateMachines;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -11,6 +13,7 @@ namespace FinancialTracker {
     public partial class SyncServer : ObservableObject, IDisposable {
         public const int Port = 8080;
 
+        private readonly ServerStateMachine stateMachine;
         private readonly IConfiguration config;
 
         private CancellationTokenSource? serverCts;
@@ -32,17 +35,12 @@ namespace FinancialTracker {
         
         public SyncServer(IConfiguration config) {
             this.config = config;
+
+            stateMachine = new();
         }
 
-        public async Task StartServerAsync() {
-            if (IsRunning) throw new Exception("Server is already running.");
-
-            IPEndPoint localEndPoint = new(IPAddress.Any, Port);
-            Server = new(localEndPoint);
-
-            Server.Start(1);
-
-            serverCts = new CancellationTokenSource();
+        public void StartServer() {
+            stateMachine.DispatchEvent(ServerStateMachine.EventId.START);
         }
 
         public async Task ConnectClient() {

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FinancialTracker.StateMachines;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -11,13 +12,7 @@ using System.Threading.Tasks;
 
 namespace FinancialTracker.ViewModels {
     public partial class UploadViewModel : ViewModelBase, IDisposable {
-        private readonly SyncServer syncServer;
-
-        public string ClientIp => syncServer.ClientIp ?? "Not connected";
-
-        public bool IsConnected => syncServer.IsConnected;
-
-        public bool IsRunning => syncServer.IsRunning;
+        private readonly ServerStateMachine stateMachine;
 
         public string WifiIpAddress {
             get {
@@ -37,10 +32,10 @@ namespace FinancialTracker.ViewModels {
             }
         }
 
-        public UploadViewModel(SyncServer syncServer) {
-            this.syncServer = syncServer;
+        public UploadViewModel(ServerStateMachine serverStateMachine) {
+            this.stateMachine = serverStateMachine;
 
-            syncServer.PropertyChanged += SyncServer_PropertyChanged;
+            serverStateMachine.PropertyChanged += SyncServer_PropertyChanged;
         }
 
         private void SyncServer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
@@ -56,7 +51,6 @@ namespace FinancialTracker.ViewModels {
             }
         }
 
-        [RelayCommand(CanExecute = nameof(CanStartServerAsync))]
         private async Task StartServerAsync() {
             await syncServer.StartServerAsync();
             await syncServer.ConnectClient();
