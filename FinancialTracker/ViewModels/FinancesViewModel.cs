@@ -38,8 +38,8 @@ namespace FinancialTracker.ViewModels {
             this.dbContext = dbContext;
             Tags = dbContext.Tags.Select(x => x.Name).ToList();
 
-            InitializeTagMenu(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
-            InitializeTagMenu(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
+            InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
+            InitializeMenuItems(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
 
             PopulateTable();
         }
@@ -50,7 +50,7 @@ namespace FinancialTracker.ViewModels {
             GC.SuppressFinalize(this);
         }
 
-        private void InitializeTagMenu(List<MenuItem> menu, ICommand command) {
+        private void InitializeMenuItems(List<MenuItem> menu, ICommand command) {
             foreach (var t in Tags) {
                 MenuItem m = new() {
                     Header = t,
@@ -103,12 +103,11 @@ namespace FinancialTracker.ViewModels {
                     .Include(x => x.Tags)
                     .Single();
 
+                await AddMissingTagsToDatabaseAsync(m);
+
                 f.Name = m.Name;
                 f.Amount = m.Amount;
                 f.Date = m.Date;
-
-                await AddMissingTagsToDatabaseAsync(m);
-
                 f.Tags = dbContext.Tags
                     .Where(t => m.Tags.Select(x => x.ToLower()).Contains(t.Name.ToLower()))
                     .ToList();
@@ -143,16 +142,13 @@ namespace FinancialTracker.ViewModels {
                 .Select(t => t.Name.ToLower())
                 .ToList();
 
-            var recordTags = fr.Tags
-                .Select(x => x.ToLower());
+            var recordTags = fr.Tags;
 
             IEnumerable<Tag> absentTags = recordTags
                 .Where(x => !existingTagsNames.Contains(x.ToLower()))
                 .Distinct()
                 .Select(x => new Tag() { Name = x });
             await dbContext.Tags.AddRangeAsync(absentTags);
-
-            await dbContext.SaveChangesAsync();
         }
 
         [RelayCommand]
