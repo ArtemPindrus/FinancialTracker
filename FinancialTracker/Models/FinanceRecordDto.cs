@@ -47,9 +47,6 @@ namespace FinancialTracker.Models {
         public FinanceRecordDto() : this(-1, string.Empty, 0, DateOnly.FromDateTime(DateTime.Now), [], true) {
         }
 
-        public FinanceRecordDto(Finance f) : this(f.Id, f.Name, f.Amount, f.Date, f.Tags.Select(t => t.Name).ToList()) {
-        }
-
         private void Tags_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
             OnChanged();
         }

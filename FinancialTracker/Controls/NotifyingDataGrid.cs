@@ -10,7 +10,7 @@ namespace FinancialTracker.Controls {
 
         public readonly static StyledProperty<IList> SelectedItemsBindingProperty =
             AvaloniaProperty.Register<NotifyingDataGrid, IList>(
-                nameof(SelectedItemsBinding), 
+                nameof(SelectedItemsBinding),
                 defaultBindingMode: Avalonia.Data.BindingMode.OneWayToSource
             );
 

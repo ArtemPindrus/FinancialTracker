@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using CommunityToolkit.Mvvm.Input;
+using FinancialTracker.Commands;
 using FinancialTracker.Models;
 using FinancialTracket.DataAccessLayer;
 using FinancialTracket.DataAccessLayer.Models;
@@ -15,14 +16,17 @@ using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : ViewModelBase, IDisposable {
-        private readonly AppDbContext dbContext;
+        readonly AppDbContext dbContext;
+        readonly CommandHistory commandHistory;
+
+        public ICommand UndoCommand => commandHistory.UndoCommand;
+        public ICommand RedoCommand => commandHistory.RedoCommand;
 
         public ObservableCollection<FinanceRecordDto> Finances { get; } = [];
 
-        public IList? SelectedFinances { 
-            get; 
-            set; 
-        }
+        public IEnumerable<FinanceRecordDto>? SelectedFinances => SelectedFinancesBind?.Cast<FinanceRecordDto>();
+
+        public IList? SelectedFinancesBind { get; set; }
 
         public List<string> Tags { get; }
 
@@ -36,6 +40,8 @@ namespace FinancialTracker.ViewModels {
 
         public FinancesViewModel(AppDbContext dbContext) {
             this.dbContext = dbContext;
+            commandHistory = new CommandHistory();
+
             Tags = dbContext.Tags.Select(x => x.Name).ToList();
 
             InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
@@ -63,7 +69,8 @@ namespace FinancialTracker.ViewModels {
         }
 
         private void PopulateTable() {
-            var finances = dbContext.Finances.Include(x => x.Tags).Select(x => new FinanceRecordDto(x))
+            var finances = dbContext.Finances.Include(x => x.Tags)
+                .Select(x => x.ToDto())
                 .ToList();
 
             Finances.Clear();
@@ -74,100 +81,66 @@ namespace FinancialTracker.ViewModels {
         }
 
         [RelayCommand]
-        private void AddTagToSelectedRecords(string tag) {
-            if (SelectedFinances is null) return;
-
-            foreach (FinanceRecordDto f in SelectedFinances) {
-                f.Tags.Add(tag);
-            }
-        }
-
-        [RelayCommand]
-        private void RemoveTagFromSelectedRecords(string tag) {
-            if (SelectedFinances is null) return;
-
-            foreach (FinanceRecordDto f in SelectedFinances) {
-                f.Tags.Remove(tag);
-            }
-        }
-
-        [RelayCommand]
         private async Task SaveChangesAsync() {
             var modified = Finances.Where(x => x.IsModified);
             var added = Finances.Where(x => x.IsAdded);
             var deleted = Finances.Where(x => x.IsDeleted);
-
-            foreach (var m in modified) {
-                var f = dbContext.Finances
-                    .Where(x => x.Id == m.Id)
-                    .Include(x => x.Tags)
-                    .Single();
-
-                await AddMissingTagsToDatabaseAsync(m);
-
-                f.Name = m.Name;
-                f.Amount = m.Amount;
-                f.Date = m.Date;
-                f.Tags = dbContext.Tags
-                    .Where(t => m.Tags.Select(x => x.ToLower()).Contains(t.Name.ToLower()))
-                    .ToList();
-            }
-
-            foreach (var a in added) {
-                await AddMissingTagsToDatabaseAsync(a);
-
-                var f = new Finance() {
-                    Name = a.Name,
-                    Amount = a.Amount,
-                    Date = a.Date,
-                    Tags = dbContext.Tags
-                        .Where(t => a.Tags.Select(x => x.ToLower()).Contains(t.Name))
-                        .ToList()
-                };
-                dbContext.Finances.Add(f);
-            }
 
             foreach (var d in deleted) {
                 var f = dbContext.Finances.Where(x => x.Id == d.Id).Single();
                 dbContext.Finances.Remove(f);
             }
 
+            foreach (FinanceRecordDto m in modified) {
+                Finance f = dbContext.Finances
+                    .Where(x => x.Id == m.Id)
+                    .Include(x => x.Tags)
+                    .Single();
+
+                await dbContext.AddMissingTagsToDatabaseAsync(m);
+
+                DbHelper.SyncDtoToEntity(m, f, dbContext);
+            }
+
+            foreach (FinanceRecordDto a in added) {
+                await dbContext.AddMissingTagsToDatabaseAsync(a);
+
+                Finance f = a.ToEntity(dbContext);
+                dbContext.Finances.Add(f);
+            }
+
             await dbContext.SaveChangesAsync();
 
             PopulateTable();
-        }
 
-        private async Task AddMissingTagsToDatabaseAsync(FinanceRecordDto fr) {
-            var existingTagsNames = dbContext.Tags
-                .Select(t => t.Name.ToLower())
-                .ToList();
-
-            var recordTags = fr.Tags;
-
-            IEnumerable<Tag> absentTags = recordTags
-                .Where(x => !existingTagsNames.Contains(x.ToLower()))
-                .Distinct()
-                .Select(x => new Tag() { Name = x });
-            await dbContext.Tags.AddRangeAsync(absentTags);
+            commandHistory.Clear();
         }
 
         [RelayCommand]
         private void Rollback() {
             PopulateTable();
+            commandHistory.Clear();
+        }
+
+        [RelayCommand]
+        private void AddTagToSelectedRecords(string tag) {
+            commandHistory.Execute(new AddTagFromSelectedRecordsCommand(tag, this));
+
+        }
+
+        [RelayCommand]
+        private void RemoveTagFromSelectedRecords(string tag) {
+            commandHistory.Execute(new RemoveTagFromSelectedRecordsCommand(tag, this));
         }
 
         [RelayCommand]
         private async Task MarkRecordDeletedAsync() {
-            if (SelectedFinances is null) return;
-
-            foreach (FinanceRecordDto i in SelectedFinances) {
-                i.IsDeleted = !i.IsDeleted;
-            }
+            commandHistory.Execute(new MarkRecordDeletedCommand(this));
         }
 
         [RelayCommand]
-        private async Task AddDefaultRecordAsync() {
-            Finances.Add(new FinanceRecordDto());
+        private void AddDefaultRecord() {
+            commandHistory.Execute(new AddDefaultFinanceRecord(Finances));
         }
     }
 }

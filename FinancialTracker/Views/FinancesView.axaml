@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="using:FinancialTracker.Models"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:viewmodels="using:FinancialTracker.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FinancialTracker.Views.FinancesView"
@@ -16,10 +17,19 @@
             <Button Content="Revert all" Command="{Binding RollbackCommand}"/>
         </StackPanel>
 
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Command="{Binding UndoCommand}">
+                <ui:FontIcon Glyph="&#xE10E;" FontFamily="{StaticResource SymbolThemeFontFamily}"/>
+            </Button>
+            <Button Command="{Binding RedoCommand}">
+                <ui:FontIcon Glyph="&#xE10D;" FontFamily="{StaticResource SymbolThemeFontFamily}"/>
+            </Button>
+        </StackPanel>
+
 		<controls:NotifyingDataGrid ItemsSource="{Binding Finances, Mode=OneWay}"
                   x:Name="Table"
                   AutoGenerateColumns="False"
-                  SelectedItemsBinding="{Binding SelectedFinances, Mode=OneWayToSource}"
+                  SelectedItemsBinding="{Binding SelectedFinancesBind}"
                   Grid.Row="1">
             <controls:NotifyingDataGrid.Styles>
 				<Style Selector="DataGridRow">
