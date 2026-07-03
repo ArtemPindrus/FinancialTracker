@@ -1,80 +1,82 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:controls="using:FinancialTracker.Controls"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:models="using:FinancialTracker.Models"
-             xmlns:ui="using:FluentAvalonia.UI.Controls"
-             xmlns:viewmodels="using:FinancialTracker.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="FinancialTracker.Views.FinancesView"
-             x:DataType="viewmodels:FinancesViewModel">
+<UserControl
+    x:Class="FinancialTracker.Views.FinancesView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:FinancialTracker.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:FinancialTracker.Models"
+    xmlns:ui="using:FluentAvalonia.UI.Controls"
+    xmlns:viewmodels="using:FinancialTracker.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="viewmodels:FinancesViewModel"
+    mc:Ignorable="d">
     <Grid RowDefinitions="Auto, *">
         <StackPanel Orientation="Horizontal">
-            <Button Content="Save" Command="{Binding SaveChangesCommand}"/>
-            <Button Content="Add" Command="{Binding AddDefaultRecordCommand}"/>
+            <Button Command="{Binding SaveChangesCommand}" Content="Save" />
+            <Button Command="{Binding AddDefaultRecordCommand}" Content="Add" />
 
-            <Button Content="Revert all" Command="{Binding RollbackCommand}"/>
+            <Button Command="{Binding RollbackCommand}" Content="Revert all" />
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
             <Button Command="{Binding UndoCommand}">
-                <ui:FontIcon Glyph="&#xE10E;" FontFamily="{StaticResource SymbolThemeFontFamily}"/>
+                <ui:FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE10E;" />
             </Button>
             <Button Command="{Binding RedoCommand}">
-                <ui:FontIcon Glyph="&#xE10D;" FontFamily="{StaticResource SymbolThemeFontFamily}"/>
+                <ui:FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE10D;" />
             </Button>
         </StackPanel>
 
-		<controls:NotifyingDataGrid ItemsSource="{Binding Finances, Mode=OneWay}"
-                  x:Name="Table"
-                  AutoGenerateColumns="False"
-                  SelectedItemsBinding="{Binding SelectedFinancesBind}"
-                  Grid.Row="1">
+        <controls:NotifyingDataGrid
+            x:Name="Table"
+            Grid.Row="1"
+            AutoGenerateColumns="False"
+            ItemsSource="{Binding Finances, Mode=OneWay}"
+            SelectedItemsBinding="{Binding SelectedFinancesBind}">
             <controls:NotifyingDataGrid.Styles>
-				<Style Selector="DataGridRow">
+                <Style Selector="DataGridRow">
                     <Setter Property="ContextFlyout">
                         <MenuFlyout>
-							<MenuFlyout.Items>
-                                <MenuItem Header="Delete" 
-                                          Command="{Binding #Table.DataContext.MarkRecordDeletedCommand}" />
-                                <MenuItem Header="Add tag"
-                                          ItemsSource="{Binding #Table.DataContext.AddTagsMenuItems}"/>
-                                <MenuItem Header="Remove tag"
-                                          ItemsSource="{Binding #Table.DataContext.RemoveTagsMenuItems}"/>
+                            <MenuFlyout.Items>
+                                <MenuItem Command="{Binding #Table.DataContext.MarkRecordDeletedCommand}" Header="Delete" />
+                                <MenuItem Header="Add tag" ItemsSource="{Binding #Table.DataContext.AddTagsMenuItems}" />
+                                <MenuItem Header="Remove tag" ItemsSource="{Binding #Table.DataContext.RemoveTagsMenuItems}" />
                             </MenuFlyout.Items>
                         </MenuFlyout>
                     </Setter>
 
-                    <Setter x:DataType="models:FinanceRecordDto" 
-                            Property="Classes.IsDisabled" 
-                            Value="{Binding IsDeleted}"/>
+                    <Setter x:DataType="models:FinanceRecordDto" Property="Classes.IsDisabled" Value="{Binding IsDeleted}" />
                 </Style>
                 <Style Selector="DataGridRow.IsDisabled">
-                    <Setter Property="Foreground" Value="Gray"/>
+                    <Setter Property="Foreground" Value="Gray" />
                 </Style>
             </controls:NotifyingDataGrid.Styles>
 
             <controls:NotifyingDataGrid.Columns>
-                <DataGridTextColumn Header="Id"
-                                    x:DataType="models:FinanceRecordDto"
-                                    Binding="{Binding Id}" 
-                                    IsReadOnly="True"/>
-			    <DataGridTextColumn Header="Name" 
-                                    x:DataType="models:FinanceRecordDto"
-                                    Binding="{Binding Name, UpdateSourceTrigger=LostFocus}" />
-                <DataGridTextColumn Header="Amount"
-                                    x:DataType="models:FinanceRecordDto"
-                                    Binding="{Binding Amount, UpdateSourceTrigger=LostFocus}" />
-                <DataGridTextColumn Header="Date"
-                                    x:DataType="models:FinanceRecordDto"
-                                    IsReadOnly="False"
-                                    Binding="{Binding Date, UpdateSourceTrigger=LostFocus}"/>
+                <DataGridTextColumn
+                    x:DataType="models:FinanceRecordDto"
+                    Binding="{Binding Id}"
+                    Header="Id"
+                    IsReadOnly="True" />
+                <DataGridTextColumn
+                    x:DataType="models:FinanceRecordDto"
+                    Binding="{Binding Name, UpdateSourceTrigger=LostFocus}"
+                    Header="Name" />
+                <DataGridTextColumn
+                    x:DataType="models:FinanceRecordDto"
+                    Binding="{Binding Amount, UpdateSourceTrigger=LostFocus}"
+                    Header="Amount" />
+                <DataGridTextColumn
+                    x:DataType="models:FinanceRecordDto"
+                    Binding="{Binding Date, UpdateSourceTrigger=LostFocus}"
+                    Header="Date"
+                    IsReadOnly="False" />
                 <DataGridTemplateColumn Header="Tags">
-					<DataGridTemplateColumn.CellTemplate>
-						<DataTemplate DataType="models:FinanceRecordDto">
-						    <controls:TagsList Tags="{Binding $parent[DataGrid].DataContext.Tags}"
-                                               SelectedTags="{Binding Tags}"/>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="models:FinanceRecordDto">
+                            <controls:TagsList SelectedTags="{Binding Tags}" Tags="{Binding $parent[DataGrid].DataContext.Tags}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

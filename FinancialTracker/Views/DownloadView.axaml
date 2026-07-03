@@ -1,19 +1,22 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewmodels="using:FinancialTracker.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="FinancialTracker.Views.DownloadView"
-             x:DataType="viewmodels:DownloadViewModel">
+<UserControl
+    x:Class="FinancialTracker.Views.DownloadView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:FinancialTracker.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="viewmodels:DownloadViewModel"
+    mc:Ignorable="d">
     <StackPanel HorizontalAlignment="Center">
-		<StackPanel Orientation="Horizontal">
-            <TextBlock Text="IpAddress:"/>
-            <TextBox Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged}"/>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="IpAddress:" />
+            <TextBox Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
 
-        <Button Content="Download" Command="{Binding DownloadCommand}" />
+        <Button Command="{Binding DownloadCommand}" Content="Download" />
 
-        <TextBlock Text="{Binding StatusMessage}"/>
+        <TextBlock Text="{Binding StatusMessage}" />
     </StackPanel>
 </UserControl>

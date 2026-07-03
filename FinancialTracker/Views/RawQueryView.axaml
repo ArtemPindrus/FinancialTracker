@@ -1,27 +1,29 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewmodels="using:FinancialTracker.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="FinancialTracker.Views.RawQueryView"
-             x:DataType="viewmodels:RawQueryViewModel">
+<UserControl
+    x:Class="FinancialTracker.Views.RawQueryView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:FinancialTracker.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="viewmodels:RawQueryViewModel"
+    mc:Ignorable="d">
     <ScrollViewer>
-		<StackPanel>
-		    <TextBox AcceptsReturn="True" 
-                     AcceptsTab="True" 
-                     Text="{Binding Query}"
-                     TextInputOptions.Multiline="True"
-                     MinHeight="300"/>
+        <StackPanel>
+            <TextBox
+                MinHeight="300"
+                AcceptsReturn="True"
+                AcceptsTab="True"
+                Text="{Binding Query}"
+                TextInputOptions.Multiline="True" />
 
             <StackPanel Orientation="Horizontal">
-                <Button Content="Execute" 
-                        Command="{Binding ExecuteQueryCommand}"/>
-                <Button Content="Query"
-                        Command="{Binding QueryCommand}"/>
+                <Button Command="{Binding ExecuteQueryCommand}" Content="Execute" />
+                <Button Command="{Binding QueryCommand}" Content="Query" />
             </StackPanel>
 
-            <ContentControl Content="{Binding ResultViewModel}"/>
+            <ContentControl Content="{Binding ResultViewModel}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -1,65 +1,74 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewmodels="using:FinancialTracker.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
-             x:Class="FinancialTracker.Views.YearlyExpensesView"
-             x:DataType="viewmodels:YearlyExpensesViewModel">
+<UserControl
+    x:Class="FinancialTracker.Views.YearlyExpensesView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:FinancialTracker.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="viewmodels:YearlyExpensesViewModel"
+    mc:Ignorable="d">
     <Grid RowDefinitions="Auto, *">
-        <ComboBox HorizontalAlignment="Center"
-                  Grid.Row="0"
-                  ItemsSource="{Binding AvailableYears}"
-                  SelectedItem="{Binding SelectedYear}"/>
+        <ComboBox
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            ItemsSource="{Binding AvailableYears}"
+            SelectedItem="{Binding SelectedYear}" />
 
-		<ScrollViewer Grid.Row="1">
-		    <StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <StackPanel>
                 <StackPanel.Styles>
-					<Style Selector="lvc|XamlDrawnLabelVisual">
-                        <Setter Property="Paint" Value="{lvc:SolidColorPaint Color='#99afbc'}"/>
-                        <Setter Property="TextSize" Value="25"/>
+                    <Style Selector="lvc|XamlDrawnLabelVisual">
+                        <Setter Property="Paint" Value="{lvc:SolidColorPaint Color='#99afbc'}" />
+                        <Setter Property="TextSize" Value="25" />
                     </Style>
                 </StackPanel.Styles>
 
-		        <lvc:CartesianChart Width="1000"
-                                    Height="650">
+                <lvc:CartesianChart Width="1000" Height="650">
                     <lvc:CartesianChart.Title>
-                        <lvc:XamlDrawnLabelVisual
-                            Text="Earnings and Expenses" />
+                        <lvc:XamlDrawnLabelVisual Text="Earnings and Expenses" />
                     </lvc:CartesianChart.Title>
 
-		            <lvc:CartesianChart.Series>
-			            <lvc:XamlColumnSeries Values="{Binding Earnings}" Padding="0" MaxBarWidth="99999"/>
-                        <lvc:XamlColumnSeries Values="{Binding Expenses}" Padding="0" MaxBarWidth="99999"/>
+                    <lvc:CartesianChart.Series>
+                        <lvc:XamlColumnSeries
+                            Padding="0"
+                            MaxBarWidth="99999"
+                            Values="{Binding Earnings}" />
+                        <lvc:XamlColumnSeries
+                            Padding="0"
+                            MaxBarWidth="99999"
+                            Values="{Binding Expenses}" />
                     </lvc:CartesianChart.Series>
 
                     <lvc:CartesianChart.XAxes>
-			            <lvc:XamlAxis AxisName="Month" MinStep="1" />
+                        <lvc:XamlAxis AxisName="Month" MinStep="1" />
                     </lvc:CartesianChart.XAxes>
 
                     <lvc:CartesianChart.YAxes>
-			            <lvc:XamlAxis AxisName="Money (uah)" />
+                        <lvc:XamlAxis AxisName="Money (uah)" />
                     </lvc:CartesianChart.YAxes>
                 </lvc:CartesianChart>
 
-                <lvc:CartesianChart Width="1000"
-                                    Height="650">
+                <lvc:CartesianChart Width="1000" Height="650">
                     <lvc:CartesianChart.Title>
-                        <lvc:XamlDrawnLabelVisual
-                            Text="Total" />
+                        <lvc:XamlDrawnLabelVisual Text="Total" />
                     </lvc:CartesianChart.Title>
 
-		            <lvc:CartesianChart.Series>
-			            <lvc:XamlColumnSeries Values="{Binding Total}" Padding="0" MaxBarWidth="99999"/>
+                    <lvc:CartesianChart.Series>
+                        <lvc:XamlColumnSeries
+                            Padding="0"
+                            MaxBarWidth="99999"
+                            Values="{Binding Total}" />
                     </lvc:CartesianChart.Series>
 
                     <lvc:CartesianChart.XAxes>
-			            <lvc:XamlAxis MinStep="1" AxisName="Month" />
+                        <lvc:XamlAxis AxisName="Month" MinStep="1" />
                     </lvc:CartesianChart.XAxes>
 
                     <lvc:CartesianChart.YAxes>
-			            <lvc:XamlAxis AxisName="Money (uah)" />
+                        <lvc:XamlAxis AxisName="Money (uah)" />
                     </lvc:CartesianChart.YAxes>
                 </lvc:CartesianChart>
             </StackPanel>
