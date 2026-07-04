@@ -2,21 +2,23 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
+using static FinancialTracker.Controls.WrapChildrenWrapper;
 
 namespace FinancialTracker.Controls;
 
 public partial class TagsList : UserControl
 {
     private readonly WrapChildrenWrapper children;
-    private readonly ICommand deleteTagCommand;
 
     public static readonly StyledProperty<List<string>> TagsProperty =
         AvaloniaProperty.Register<TagsList, List<string>>(nameof(Tags));
@@ -35,8 +37,7 @@ public partial class TagsList : UserControl
         set => SetValue(SelectedTagsProperty, value);
     }
 
-    public TagsList()
-    {
+    public TagsList() {
         InitializeComponent();
         children = new(Wrap);
 
@@ -54,7 +55,7 @@ public partial class TagsList : UserControl
 
         if (change.Property == SelectedTagsProperty) {
             if (change.OldValue is ObservableCollection<string> oldSelectedTags) {
-                oldSelectedTags.CollectionChanged -= NewSelectedTags_CollectionChanged;
+                 oldSelectedTags.CollectionChanged -= NewSelectedTags_CollectionChanged;
             }
 
             UpdateList();
@@ -70,57 +71,13 @@ public partial class TagsList : UserControl
     }
 
     private void UpdateList() {
-        children.SetDataContext(SelectedTags);
+        children.SelectedTags = SelectedTags;
         children.EnsureHasAtLeast(SelectedTags.Count + 1);
 
-        // make redundant children invisible
-        int vis = SelectedTags.Count;
-        children.EnsureAreVisible(vis);
+        int vis = SelectedTags.Count + 1;
+        children.MakeExclusivelyVisible(vis);
 
-        for (int i = 0; i < children.Count; i++) {
-            var c = children[i];
-            if (c.IsVisible) {
-                if (c.InnerRightContent is Button innerButton) {
-                    if (!innerButton.IsVisible) innerButton.IsVisible = true;
-                } else {
-                    Button deleteButton = new() {
-                        Content = "X",
-                        Background = Brushes.Transparent,
-                        Command = deleteTagCommand,
-                        CommandParameter = i,
-                        IsTabStop = false,
-                    };
-
-                    c.InnerRightContent = deleteButton;
-                }
-            }
-        }
-
-        // create hanging one
-        foreach (var i in children.Where(x => x.IsVisible)) {
-            i.KeyBindings.Clear();
-        }
-
-        AutoCompleteBox hanging = children[vis];
-        hanging.IsVisible = true;
-        hanging.Text = null;
-
-        if (hanging.InnerRightContent is Button b) b.IsVisible = false;
-
-        RelayCommand enterCommand = new(() => {
-            if (string.IsNullOrWhiteSpace(hanging.Text)) return;
-
-            if (hanging.InnerRightContent is Button b) b.IsVisible = true;
-
-            SelectedTags.Add(hanging.Text);
-        });
-
-        KeyBinding enterKey = new() {
-            Gesture = new KeyGesture(Key.Enter),
-            Command = enterCommand
-        };
-
-        hanging.KeyBindings.Add(enterKey);
+        children.UpdateText();
     }
 
     private void DeleteTagAt(int i) {
@@ -128,16 +85,16 @@ public partial class TagsList : UserControl
     }
 }
 
-public class WrapChildrenWrapper : IEnumerable<AutoCompleteBox> {
-    private const int BindingDelay = 300;
-
+public class WrapChildrenWrapper : IEnumerable<AutoCompleteBoxWrapper> {
     private readonly WrapPanel wrap;
+
     private IEnumerable<string>? itemsSource;
-    private object? dataContext;
 
-    public AutoCompleteBox this[int index] => (AutoCompleteBox)wrap.Children[index];
+    public AutoCompleteBoxWrapper this[int index] => (AutoCompleteBoxWrapper)wrap.Children[index];
 
-    public IEnumerable<AutoCompleteBox> Children => wrap.Children.Cast<AutoCompleteBox>();
+    public IList<string>? SelectedTags { get; set; }
+
+    public IEnumerable<AutoCompleteBoxWrapper> Children => wrap.Children.Cast<AutoCompleteBoxWrapper>();
 
     public int Count => wrap.Children.Count;
 
@@ -145,55 +102,118 @@ public class WrapChildrenWrapper : IEnumerable<AutoCompleteBox> {
         this.wrap = wrap;
     }
 
+    public void Dispose() {
+        foreach (var item in Children) {
+            item.LostFocus -= Ab_LostFocus;
+        }
+    }
+
+    /// <summary>
+    /// Set ItemsSource property of every child.
+    /// </summary>
+    /// <param name="itemsSource"></param>
     public void SetItemsSource(IEnumerable<string> itemsSource) {
         this.itemsSource = itemsSource;
-        foreach (AutoCompleteBox c in Children) {
+        foreach (var c in Children) {
             c.ItemsSource = itemsSource;
         }
     }
 
-    public void SetDataContext(object? dataContext) {
-        this.dataContext = dataContext;
-        foreach (AutoCompleteBox c in Children) {
-            c.DataContext = dataContext;
-        }
-    }
-
-    public void EnsureAreVisible(int vis) {
+    /// <summary>
+    /// Make the first <paramref name="vis"/> children visible, while the rest - invisible.
+    /// </summary>
+    /// <param name="vis">Number of children.</param>
+    public void MakeExclusivelyVisible(int vis) {
         for (int i = 0; i < vis; i++) {
             AutoCompleteBox c = this[i];
             c.IsVisible = true;
         }
 
-        for (int i = vis + 1; i < Count; i++) {
+        for (int i = vis; i < Count; i++) {
             AutoCompleteBox c = this[i];
             c.IsVisible = false;
         }
     }
 
+    /// <summary>
+    /// Ensures that there are at least <paramref name="cCount"/> children.
+    /// </summary>
+    /// <param name="cCount">Children count.</param>
     public void EnsureHasAtLeast(int cCount) {
         int diff = cCount - Count; // 3 - 2 = 1; 2 - 3 = -1
 
-        int i = Count;
         for (; diff > 0; diff--) {
-            AutoCompleteBox ab = new() {
-                DataContext = dataContext,
-                ItemsSource = itemsSource,
-            };
-
-            var binding = new Binding($"[{i}]") { Delay = BindingDelay };
-            ab.Bind(AutoCompleteBox.TextProperty, binding);
-
-            AddChild(ab);
-            i++;
+            AppendAutoCompleteBox();
         }
     }
 
-    private void AddChild(AutoCompleteBox child) {
+    public void UpdateText() {
+        if (SelectedTags is null) return;
+
+        foreach (var c in Children) {
+            int index = c.Index;
+
+            if (SelectedTags.Count > index) {
+                c.SelectedItem = SelectedTags[index];
+            } else c.SelectedItem = null;
+        }
+    }
+
+    /// <summary>
+    /// Creates a valid, binded AutoCompleteBox and appends it to the end of the sequence.
+    /// </summary>
+    private void AppendAutoCompleteBox() {
+        int index = Children.Count();
+        AutoCompleteBoxWrapper ab = new(index) {
+            ItemsSource = itemsSource,
+        };
+
+        if (SelectedTags is not null
+            && SelectedTags.Count > index) {
+            ab.SelectedItem = SelectedTags[index];
+        }
+
+        ab.LostFocus += Ab_LostFocus;
+
+        AddChild(ab);
+    }
+
+    private void Ab_LostFocus(object? sender, RoutedEventArgs e) {
+        if (sender is not AutoCompleteBoxWrapper box
+            || SelectedTags is null) return;
+
+        string? newTag = box.Text ?? "";
+        int tagIndex = box.Index;
+
+        if (tagIndex == SelectedTags.Count) {
+            if (!string.IsNullOrWhiteSpace(newTag)) {
+                SelectedTags.Add(newTag); 
+            }
+        }
+        else {
+            SelectedTags[tagIndex] = newTag;
+
+            if (string.IsNullOrWhiteSpace(newTag)) {
+                SelectedTags.RemoveAt(tagIndex);
+            }
+        }
+    }
+
+    private void AddChild(AutoCompleteBoxWrapper child) {
         wrap.Children.Add(child);
     }
 
-    public IEnumerator<AutoCompleteBox> GetEnumerator() => Children.GetEnumerator();
+    public IEnumerator<AutoCompleteBoxWrapper> GetEnumerator() => Children.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public class AutoCompleteBoxWrapper : AutoCompleteBox {
+        protected override Type StyleKeyOverride => typeof(AutoCompleteBox);
+
+        public int Index { get; }
+
+        public AutoCompleteBoxWrapper(int index) {
+            Index = index;
+        }
+    }
 }

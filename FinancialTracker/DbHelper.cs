@@ -25,11 +25,12 @@ namespace FinancialTracker {
             var recordTags = fr.Tags;
 
             IEnumerable<Tag> absentTags = recordTags
-                .Where(x => !existingTagsNames.Contains(x.ToLower()))
+                .Where(x => !string.IsNullOrEmpty(x) && !existingTagsNames.Contains(x.ToLower()))
                 .Distinct()
                 .Select(x => new Tag() { Name = x });
 
             await dbContext.Tags.AddRangeAsync(absentTags);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

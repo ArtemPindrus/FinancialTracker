@@ -8,5 +8,13 @@ namespace FinancialTracket.DataAccessLayer {
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            modelBuilder.Entity<Tag>().ToTable(
+                t => {
+                    t.HasCheckConstraint("CK_Tag_Name_NonWhitespace", "length(trim(\"Name\")) > 0");
+                }
+            );
+        }
     }
 }
