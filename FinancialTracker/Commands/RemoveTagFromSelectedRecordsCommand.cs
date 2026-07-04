@@ -6,9 +6,9 @@ namespace FinancialTracker.Commands {
     public class RemoveTagFromSelectedRecordsCommand : IUndoableCommand {
         readonly FinancesViewModel vm;
         readonly string tag;
-        readonly List<FinanceRecordDto> removed = new();
+        readonly List<FinanceRecordDto> modifiedFinances = new();
 
-        public bool IsReversable => removed.Count > 0;
+        public bool IsReversable => modifiedFinances.Count > 0;
 
         public RemoveTagFromSelectedRecordsCommand(string tag, FinancesViewModel vm) {
             this.tag = tag;
@@ -16,16 +16,22 @@ namespace FinancialTracker.Commands {
         }
 
         public void Execute() {
-            foreach (var f in vm.SelectedFinances) {
-                if (f.Tags.Contains(tag)) {
+            if (modifiedFinances.Count == 0) {
+                foreach (var f in vm.SelectedFinances) {
+                    if (f.Tags.Contains(tag)) {
+                        f.Tags.Remove(tag);
+                        modifiedFinances.Add(f);
+                    }
+                }
+            } else {
+                foreach (var f in modifiedFinances) {
                     f.Tags.Remove(tag);
-                    removed.Add(f);
                 }
             }
         }
 
         public void Unexecute() {
-            foreach (var f in removed) {
+            foreach (var f in modifiedFinances) {
                 f.Tags.Add(tag);
             }
         }
