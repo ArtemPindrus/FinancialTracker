@@ -29,6 +29,8 @@ namespace FinancialTracker.StateMachines {
         }
 
         private async Task TryConnectAsync() {
+            if (tcpListener is null) return;
+
             try {
                 tcpClient = await tcpListener.AcceptTcpClientAsync(acceptCts.Token);
                 DispatchEvent(EventId.CONNECTED);

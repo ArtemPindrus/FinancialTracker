@@ -73,10 +73,6 @@ public partial class TagsList : UserControl
 
         children.UpdateText();
     }
-
-    private void DeleteTagAt(int i) {
-        SelectedTags.RemoveAt(i);
-    }
 }
 
 public class WrapChildrenWrapper : IEnumerable<AutoCompleteBoxWrapper> {
