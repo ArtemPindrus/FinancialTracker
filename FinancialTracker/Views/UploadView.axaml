@@ -11,17 +11,8 @@
     mc:Ignorable="d">
     <StackPanel HorizontalAlignment="Stretch">
         <TextBlock HorizontalAlignment="Center" Text="{Binding WifiIpAddress, StringFormat='Server IP: {0}'}" />
-        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-            <Button Command="{Binding StartServerCommand}" Content="Start" />
-            <Button Command="{Binding StopServerCommand}" Content="Stop" />
-        </StackPanel>
+        <TextBlock HorizontalAlignment="Center" Text="{Binding Port, StringFormat='Port: {0}'}" />
 
-        <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding IsConnected}">
-            <TextBlock HorizontalAlignment="Center" Text="{Binding ClientIp, StringFormat='Connected client: {0}'}" />
-            <Button
-                HorizontalAlignment="Center"
-                Command="{Binding SendDatabaseCommand}"
-                Content="Send DB" />
-        </StackPanel>
+        <ContentControl HorizontalAlignment="Center" Content="{Binding CurrentViewModel}" />
     </StackPanel>
 </UserControl>

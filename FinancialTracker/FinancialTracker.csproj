@@ -34,8 +34,15 @@
     <Compile Update="Views\TextResultView.axaml.cs">
       <DependentUpon>TextResultView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\UploadDIsconnectedView.axaml.cs">
+      <DependentUpon>UploadDisconnectedView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\YearlyExpensesView.axaml.cs">
       <DependentUpon>YearlyExpensesView.axaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Net\" />
   </ItemGroup>
 </Project>

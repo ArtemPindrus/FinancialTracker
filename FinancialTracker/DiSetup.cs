@@ -1,11 +1,9 @@
-﻿using Avalonia.Media;
-using FinancialTracker.Services;
+﻿using FinancialTracker.Services;
 using FinancialTracker.ViewModels;
 using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace FinancialTracker {
     public static class DiSetup {
@@ -21,8 +19,6 @@ namespace FinancialTracker {
             services.AddTransient<YearlyExpensesViewModel>();
             services.AddTransient<DownloadViewModel>();
             services.AddTransient<UploadViewModel>();
-
-            services.AddTransient<SyncServer>();
 
             services.AddSingleton<IViewCreator<FinancesViewModel>, ViewCreator<FinancesViewModel>>();
             services.AddSingleton<IViewCreator<RawQueryViewModel>, ViewCreator<RawQueryViewModel>>();
