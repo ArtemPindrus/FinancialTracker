@@ -8,17 +8,17 @@ namespace FinancialTracker.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private IViewCreator<FinancesViewModel> financesViewModelCreator;
-    private IViewCreator<RawQueryViewModel> rawQueryViewModelCreator;
-    private IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator;
+    private readonly IViewCreator<FinancesViewModel> financesViewModelCreator;
+    private readonly IViewCreator<RawQueryViewModel> rawQueryViewModelCreator;
+    private readonly IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator;
     private readonly IViewCreator<DownloadViewModel> downloadViewModelCreator;
     private readonly IViewCreator<UploadViewModel> uploadViewModelCreator;
 
     [ObservableProperty]
-    private NavigationViewItem? selectedNavigationItem;
+    public partial NavigationViewItem? SelectedNavigationItem { get; set; }
 
     [ObservableProperty]
-    private ViewModelBase? viewModel;
+    public partial ViewModelBase? ViewModel { get; set; }
 
     public List<string?> Items { get; } = [null, "1", "2", "3"];
 

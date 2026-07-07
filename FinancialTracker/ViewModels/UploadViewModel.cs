@@ -63,7 +63,7 @@ namespace FinancialTracker.ViewModels {
             CurrentViewModel = syncServer.CurrentStateId switch {
                 SyncServer.StateId.DISCONNECTED => new UploadDisconnectedViewModel(TryConnectingCommand),
                 SyncServer.StateId.CONNECTING => new UploadConnectingViewModel(CancelConnectionCommand),
-                SyncServer.StateId.CONNECTEDIDLE => new UploadConnectedViewModel(syncServer.ClientIp, DisconnectCommand, SendCommand),
+                SyncServer.StateId.CONNECTEDIDLE => new UploadConnectedViewModel(syncServer.ClientIp ?? "NO IP", DisconnectCommand, SendCommand),
                 SyncServer.StateId.SENDING => "SENDING...",
                 _ => null
             };
