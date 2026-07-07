@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.StateMachines;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.ComponentModel;
 using System.Net.NetworkInformation;
@@ -36,9 +37,9 @@ namespace FinancialTracker.ViewModels {
             }
         }
 
-        public UploadViewModel() {
-            syncServer = new();
-            syncServer.Init();
+        public UploadViewModel(IConfiguration config) {
+            syncServer = new(config);
+            syncServer.StartServer();
             syncServer.Start();
 
             syncServer.PropertyChanged += SyncServer_PropertyChanged;
@@ -62,9 +63,20 @@ namespace FinancialTracker.ViewModels {
             CurrentViewModel = syncServer.CurrentStateId switch {
                 SyncServer.StateId.DISCONNECTED => new UploadDisconnectedViewModel(TryConnectingCommand),
                 SyncServer.StateId.CONNECTING => new UploadConnectingViewModel(CancelConnectionCommand),
-                SyncServer.StateId.CONNECTEDIDLE => "CONNECTED TEST",
+                SyncServer.StateId.CONNECTEDIDLE => new UploadConnectedViewModel(syncServer.ClientIp, DisconnectCommand, SendCommand),
+                SyncServer.StateId.SENDING => "SENDING...",
                 _ => null
             };
+        }
+
+        [RelayCommand]
+        void Send() {
+            syncServer.DispatchEvent(SyncServer.EventId.SEND);
+        }
+
+        [RelayCommand]
+        void Disconnect() {
+            syncServer.DispatchEvent(SyncServer.EventId.DISCONNECT);
         }
 
         [RelayCommand]

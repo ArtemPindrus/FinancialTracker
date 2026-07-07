@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Configuration;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -9,6 +11,8 @@ namespace FinancialTracker.StateMachines {
     public partial class SyncServer : IDisposable {
         public const int Port = 8080;
 
+        private readonly IConfiguration config;
+
         TcpListener? tcpListener;
         TcpClient? tcpClient;
 
@@ -16,7 +20,11 @@ namespace FinancialTracker.StateMachines {
 
         public string? ClientIp => tcpClient?.Client?.RemoteEndPoint?.ToString();
 
-        public void Init() {
+        public SyncServer(IConfiguration config) {
+            this.config = config;
+        }
+
+        public void StartServer() {
             tcpListener = new TcpListener(IPAddress.Any, Port);
             tcpListener.Start(1);
         }
@@ -26,6 +34,33 @@ namespace FinancialTracker.StateMachines {
             tcpClient?.Dispose();
 
             GC.SuppressFinalize(this);
+        }
+
+        private async Task SendDatabase() {
+            if (tcpClient is null) {
+                throw new Exception("Client isn't connected!");
+            }
+
+            using var stream = tcpClient.GetStream();
+            using var writer = new BinaryWriter(stream);
+
+            string dbPath = config.GetDatabasePath();
+            long fileSize = new FileInfo(dbPath).Length;
+            writer.Write(fileSize);
+            writer.Flush();
+
+            try {
+                CancellationTokenSource cts = new(10000);
+
+                using var fileStream = File.OpenRead(dbPath);
+                await fileStream.CopyToAsync(stream, cts.Token);
+            } catch {
+                DispatchEvent(EventId.DISCONNECT);
+
+                return;
+            }
+
+            DispatchEvent(EventId.FINISHEDSENDING);
         }
 
         private async Task TryConnectAsync() {
@@ -42,6 +77,10 @@ namespace FinancialTracker.StateMachines {
         void CancelTryConnect() {
             acceptCts.Cancel();
             acceptCts = new CancellationTokenSource();
+        }
+
+        private void OnConnectedExit() {
+            tcpClient?.Dispose();
         }
 
         private void OnConnectingExit() {

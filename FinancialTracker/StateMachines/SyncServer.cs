@@ -175,6 +175,13 @@ namespace FinancialTracker.StateMachines
 
         private void CONNECTED_exit()
         {
+            // Connected behavior
+            // uml: exit / { OnConnectedExit(); }
+            {
+                // Step 1: execute action `OnConnectedExit();`
+                OnConnectedExit();
+            } // end of behavior for Connected
+
             this.CurrentStateId = StateId.ROOT;
         }
 
@@ -216,12 +223,13 @@ namespace FinancialTracker.StateMachines
         private void CONNECTEDIDLE_send()
         {
             // ConnectedIdle behavior
-            // uml: Send TransitionTo(Sending)
+            // uml: Send / { SendDatabase(); } TransitionTo(Sending)
             {
                 // Step 1: Exit states until we reach `Connected` state (Least Common Ancestor for transition).
                 CONNECTEDIDLE_exit();
 
-                // Step 2: Transition action: ``.
+                // Step 2: Transition action: `SendDatabase();`.
+                SendDatabase();
 
                 // Step 3: Enter/move towards transition target `Sending`.
                 SENDING_enter();

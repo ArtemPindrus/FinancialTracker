@@ -258,7 +258,7 @@ Connected --> Disconnected : Disconnect
 
 Sending --> ConnectedIdle : FinishedSending
 
-ConnectedIdle --> Sending : Send
+ConnectedIdle --> Sending : Send / #123; SendDatabase()#59; #125;
 
 Connected.(InitialState) --> ConnectedIdle
 
@@ -475,6 +475,13 @@ evaluateGuard = null;
     #CONNECTED_exit()
     {
         // Connected behavior
+        // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "OnConnectedExit();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "OnConnectedExit();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "OnConnectedExit();");
+        } // end of behavior for Connected
+        
+        // Connected behavior
         // uml: exit / { this.tracer?.exitState('Connected'); }
         {
             // Step 1: execute action `this.tracer?.exitState('Connected');`
@@ -537,13 +544,13 @@ evaluateGuard = null;
     #CONNECTEDIDLE_send()
     {
         // ConnectedIdle behavior
-        // uml: Send / { this.tracer?.edgeTransition("edge6"); } TransitionTo(Sending)
+        // uml: Send / { this.tracer?.log("⚡ FSM would execute action: " + "SendDatabase();");this.tracer?.edgeTransition("edge6"); } TransitionTo(Sending)
         {
             // Step 1: Exit states until we reach `Connected` state (Least Common Ancestor for transition).
             this.#CONNECTEDIDLE_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge6");`.
-            this.tracer?.edgeTransition("edge6");
+            // Step 2: Transition action: `this.tracer?.log("⚡ FSM would execute action: " + "SendDatabase();");this.tracer?.edgeTransition("edge6");`.
+            this.tracer?.log("⚡ FSM would execute action: " + "SendDatabase();");this.tracer?.edgeTransition("edge6");
             
             // Step 3: Enter/move towards transition target `Sending`.
             this.#SENDING_enter();

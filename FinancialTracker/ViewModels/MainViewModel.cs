@@ -37,9 +37,7 @@ public partial class MainViewModel : ViewModelBase
     }
 
     partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
-        if (oldValue is IDisposable oldDisp) {
-            oldDisp.Dispose();
-        }
+        if (ViewModel is IDisposable ds) ds.Dispose();
 
         if (newValue is null) {
             ViewModel = null;
