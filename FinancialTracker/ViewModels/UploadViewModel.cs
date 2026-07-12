@@ -54,13 +54,13 @@ namespace FinancialTracker.ViewModels {
         }
 
         private void SyncServer_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
-            if (e.PropertyName == nameof(SyncServer.CurrentStateId)) {
+            if (e.PropertyName == nameof(SyncServer.stateId)) {
                 SyncUiToSmState();
             }
         }
 
         void SyncUiToSmState() {
-            CurrentViewModel = syncServer.CurrentStateId switch {
+            CurrentViewModel = syncServer.stateId switch {
                 SyncServer.StateId.DISCONNECTED => new UploadDisconnectedViewModel(TryConnectingCommand),
                 SyncServer.StateId.CONNECTING => new UploadConnectingViewModel(CancelConnectionCommand),
                 SyncServer.StateId.CONNECTEDIDLE => new UploadConnectedViewModel(syncServer.ClientIp ?? "NO IP", DisconnectCommand, SendCommand),
@@ -71,22 +71,22 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         void Send() {
-            syncServer.DispatchEvent(SyncServer.EventId.SEND);
+            syncServer.Send();
         }
 
         [RelayCommand]
         void Disconnect() {
-            syncServer.DispatchEvent(SyncServer.EventId.DISCONNECT);
+            syncServer.Disconnect();
         }
 
         [RelayCommand]
         void CancelConnection() {
-            syncServer.DispatchEvent(SyncServer.EventId.CONNECTIONFAILED);
+            syncServer.CancelConnection();
         }
 
         [RelayCommand]
         void TryConnecting() {
-            syncServer.DispatchEvent(SyncServer.EventId.CONNECT);
+            syncServer.TryConnecting();
         }
     }
 }

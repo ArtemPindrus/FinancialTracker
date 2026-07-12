@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace FinancialTracker.StateMachines {
-    public partial class SyncServer : IDisposable {
+    public partial class SyncServer : ObservableObject, IDisposable {
         public const int Port = 8080;
 
         private readonly IConfiguration config;
@@ -29,6 +29,11 @@ namespace FinancialTracker.StateMachines {
             tcpListener.Start(1);
         }
 
+        public void DispatchEventNotify(EventId eventId) {
+            DispatchEvent(eventId);
+            OnPropertyChanged(nameof(stateId));
+        }
+
         public void Dispose() {
             tcpListener?.Dispose();
             tcpClient?.Dispose();
@@ -36,7 +41,50 @@ namespace FinancialTracker.StateMachines {
             GC.SuppressFinalize(this);
         }
 
-        private async Task SendDatabase() {
+        public void TryConnecting() {
+            DispatchEventNotify(EventId.CONNECTREQUEST);
+        }
+
+        public void CancelConnection() {
+            DispatchEventNotify(EventId.CONNECTIONCANCELED);
+        }
+
+        public void Disconnect() {
+            DispatchEventNotify(EventId.DISCONNECTED);
+        }
+
+        public void Send() {
+            DispatchEventNotify(EventId.SENDREQUEST);
+        }
+
+        void CancelTryConnect() {
+            acceptCts.Cancel();
+            acceptCts = new CancellationTokenSource();
+        }
+
+        private void OnConnectedExit() {
+            tcpClient?.Dispose();
+        }
+
+        private async Task OnConnectingEnter() {
+            if (tcpListener is null) {
+                DispatchEventNotify(EventId.CONNECTIONFAILED);
+                return;
+            }
+
+            try {
+                tcpClient = await tcpListener.AcceptTcpClientAsync(acceptCts.Token);
+                DispatchEventNotify(EventId.CONNECTIONSUCCEEDED);
+            } catch {
+                DispatchEventNotify(EventId.CONNECTIONFAILED);
+            }
+        }
+
+        private void OnConnectingExit() {
+            CancelTryConnect();
+        }
+
+        private async Task OnSendingEnterAsync() {
             if (tcpClient is null) {
                 throw new Exception("Client isn't connected!");
             }
@@ -55,36 +103,12 @@ namespace FinancialTracker.StateMachines {
                 using var fileStream = File.OpenRead(dbPath);
                 await fileStream.CopyToAsync(stream, cts.Token);
             } catch {
-                DispatchEvent(EventId.DISCONNECT);
+                DispatchEventNotify(EventId.DISCONNECTED);
 
                 return;
             }
 
-            DispatchEvent(EventId.FINISHEDSENDING);
-        }
-
-        private async Task TryConnectAsync() {
-            if (tcpListener is null) return;
-
-            try {
-                tcpClient = await tcpListener.AcceptTcpClientAsync(acceptCts.Token);
-                DispatchEvent(EventId.CONNECTED);
-            } catch {
-                DispatchEvent(EventId.CONNECTIONFAILED);
-            }
-        }
-
-        void CancelTryConnect() {
-            acceptCts.Cancel();
-            acceptCts = new CancellationTokenSource();
-        }
-
-        private void OnConnectedExit() {
-            tcpClient?.Dispose();
-        }
-
-        private void OnConnectingExit() {
-            CancelTryConnect();
+            DispatchEventNotify(EventId.SENDINGCOMPLETED);
         }
     }
 }

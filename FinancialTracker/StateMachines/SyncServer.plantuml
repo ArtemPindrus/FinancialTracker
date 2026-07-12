@@ -1,0 +1,32 @@
+@startuml SyncServer
+
+state Disconnected
+state Connecting {
+    Connecting: enter / 
+    Connecting: exit / 
+}
+
+state Connected {
+    Connected: exit /
+
+    state ConnectedIdle
+    state Sending {
+        Sending: enter / 
+    }
+
+    [*] -> ConnectedIdle
+}
+
+[*] -> Disconnected
+Disconnected -> Connecting: ConnectRequest
+
+Connecting -> Disconnected: ConnectionFailed
+Connecting -> Disconnected: ConnectionCanceled
+Connecting --> Connected: ConnectionSucceeded
+
+ConnectedIdle -> Sending: SendRequest
+Sending -> ConnectedIdle: SendingCompleted
+
+Connected -> Disconnected: Disconnected
+
+@enduml
