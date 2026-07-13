@@ -29,7 +29,7 @@ namespace FinancialTracker.StateMachines {
             DispatchEventNotify(EventId.CONNECTREQUEST);
         }
 
-        async Task OnConnectingEnterAsync() {
+        async Task OnConnectingEnter() {
             if (RequestedIpAddress is null) {
                 DispatchEventNotify(EventId.CONNECTIONFAILED);
                 return;

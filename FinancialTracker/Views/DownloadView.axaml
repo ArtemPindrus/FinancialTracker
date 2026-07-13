@@ -9,14 +9,5 @@
     d:DesignWidth="800"
     x:DataType="viewmodels:DownloadViewModel"
     mc:Ignorable="d">
-    <StackPanel HorizontalAlignment="Center">
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="IpAddress:" />
-            <TextBox Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged}" />
-        </StackPanel>
-
-        <Button Command="{Binding DownloadCommand}" Content="Download" />
-
-        <TextBlock Text="{Binding StatusMessage}" />
-    </StackPanel>
+    
 </UserControl>
