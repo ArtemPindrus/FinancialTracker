@@ -1,8 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FinancialTracker.Legacy;
+using FinancialTracker.StateMachines;
 using HarfBuzzSharp;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -10,50 +14,29 @@ using System.Threading.Tasks;
 
 namespace FinancialTracker.ViewModels {
     public partial class DownloadViewModel : ViewModelBase {
-        private readonly IConfiguration config;
+        private readonly SyncClient syncClient;
 
         [ObservableProperty]
-        private string? statusMessage;
-
-        public string? IpAddress { get; set; }
+        object? currentViewModel;
 
         public DownloadViewModel(IConfiguration config) {
-            this.config = config;
+            syncClient = new(config);
+            syncClient.Start();
+
+            syncClient.PropertyChanged += SyncServer_PropertyChanged;
         }
 
-        [RelayCommand]
-        private async Task DownloadAsync() {
-            StatusMessage = "";
-
-            if (!IPAddress.TryParse(IpAddress, out IPAddress? ip)) {
-                StatusMessage = "Invalid IP address.";
-                return;
-            }
-            IPEndPoint remoteEndPoint = new(ip, 8080);
-
-            TcpClient client = new();
-            await client.ConnectAsync(remoteEndPoint);
-
-            using var stream = client.GetStream();
-            using var reader = new BinaryReader(stream);
-
-            long fileSize = reader.ReadInt64();
-            Log($"Database size: {fileSize}");
-
-            using var fileStream = File.Create(config.GetDatabasePath());
-            byte[] buffer = new byte[81920];
-            long remaining = fileSize;
-
-            while (remaining > 0) {
-                int read = await stream.ReadAsync(buffer, 0, (int)Math.Min(buffer.Length, remaining));
-                if (read == 0) break;
-                await fileStream.WriteAsync(buffer, 0, read);
-                remaining -= read;
+        private void SyncServer_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            if (e.PropertyName == nameof(SyncClient.stateId)) {
+                SyncUiToSmState();
             }
         }
 
-        private void Log(string message) {
-            StatusMessage += message + Environment.NewLine;
+        private void SyncUiToSmState() {
+            CurrentViewModel = syncClient.stateId switch {
+                
+                _ => null
+            };
         }
     }
 }

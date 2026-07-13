@@ -1,0 +1,23 @@
+@startuml SyncClient
+
+state Idle
+state Connecting {
+    Connecting: enter / 
+}
+state Receiving {
+    Receiving: enter / 
+    Receiving: exit /
+}
+
+[*] -> Idle
+
+Idle -> Connecting: ConnectRequest
+
+Connecting --> Receiving: ConnectionSucceeded
+Connecting -> Idle: ConnectionFailed
+Connecting -> Idle: ConnectionCanceled
+
+Receiving -> Idle: ReceivingCompleted
+Receiving -> Idle: ReceivingFailed
+
+@enduml

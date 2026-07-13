@@ -24,14 +24,14 @@ namespace FinancialTracker.StateMachines {
             this.config = config;
         }
 
-        public void StartServer() {
-            tcpListener = new TcpListener(IPAddress.Any, Port);
-            tcpListener.Start(1);
-        }
-
         public void DispatchEventNotify(EventId eventId) {
             DispatchEvent(eventId);
             OnPropertyChanged(nameof(stateId));
+        }
+
+        public void StartServer() {
+            tcpListener = new TcpListener(IPAddress.Any, Port);
+            tcpListener.Start(1);
         }
 
         public void Dispose() {
@@ -63,7 +63,7 @@ namespace FinancialTracker.StateMachines {
         }
 
         private void OnConnectedExit() {
-            tcpClient?.Dispose();
+            tcpClient?.Close();
         }
 
         private async Task OnConnectingEnter() {
@@ -84,7 +84,7 @@ namespace FinancialTracker.StateMachines {
             CancelTryConnect();
         }
 
-        private async Task OnSendingEnterAsync() {
+        private async Task OnSendingEnter() {
             if (tcpClient is null) {
                 throw new Exception("Client isn't connected!");
             }

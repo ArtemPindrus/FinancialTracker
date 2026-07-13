@@ -9,11 +9,17 @@ using StateSmith.Runner;
 using StateSmith.SmGraph;
 
 // See https://github.com/StateSmith/tutorial-2/tree/main/lesson-1
-SmRunner runner = new(diagramPath: "SyncServer.plantuml", new MyRenderConfig(), transpilerId: TranspilerId.CSharp);
-AddEnterAndExitCalls();
-runner.Run();
+SmRunner syncServerRunner = new(diagramPath: "SyncServer.plantuml", new MyRenderConfig(), transpilerId: TranspilerId.CSharp);
+AddEnterAndExitCalls(syncServerRunner);
 
-void AddEnterAndExitCalls() {
+SmRunner syncClientRunner = new(diagramPath: "SyncClient.plantuml", new MyRenderConfig(), transpilerId: TranspilerId.CSharp);
+AddEnterAndExitCalls(syncClientRunner);
+
+syncServerRunner.Run();
+syncClientRunner.Run();
+
+// Funcs
+void AddEnterAndExitCalls(SmRunner runner) {
     runner.SmTransformer.InsertBeforeFirstMatch(StandardSmTransformer.TransformationId.Standard_Validation1, (sm) => {
     sm.VisitTypeRecursively((State s) => {
         if (s.Behaviors.Any(b => b.ToString() == "enter")) {
