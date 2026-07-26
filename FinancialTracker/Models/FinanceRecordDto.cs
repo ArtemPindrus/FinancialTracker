@@ -13,7 +13,7 @@ namespace FinancialTracker.Models {
         private string name;
 
         [ObservableProperty]
-        private decimal amount;
+        private double amount;
 
         [ObservableProperty]
         private DateOnly date;
@@ -29,7 +29,7 @@ namespace FinancialTracker.Models {
 
         public ObservableCollection<string> Tags { get; }
 
-        public FinanceRecordDto(int id, string name, decimal amount, DateOnly date, IEnumerable<string> tags, 
+        public FinanceRecordDto(int id, string name, double amount, DateOnly date, IEnumerable<string> tags, 
             bool isAdded = false) {
             this.Id = id;
             this.name = name;

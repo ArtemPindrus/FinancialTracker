@@ -1,6 +1,5 @@
 ﻿using FinancialTracket.DataAccessLayer;
 using FinancialTracket.DataAccessLayer.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace FinancialTracker.Models {
