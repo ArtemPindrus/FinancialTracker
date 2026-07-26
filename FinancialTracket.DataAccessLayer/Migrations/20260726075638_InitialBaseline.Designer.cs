@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinancialTracket.DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260401181645_M1")]
-    partial class M1
+    [Migration("20260726075638_InitialBaseline")]
+    partial class InitialBaseline
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
 
             modelBuilder.Entity("FinanceTag", b =>
                 {
@@ -68,7 +68,10 @@ namespace FinancialTracket.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", t =>
+                        {
+                            t.HasCheckConstraint("CK_Tag_Name_NonWhitespace", "length(trim(\"Name\")) > 0");
+                        });
                 });
 
             modelBuilder.Entity("FinanceTag", b =>

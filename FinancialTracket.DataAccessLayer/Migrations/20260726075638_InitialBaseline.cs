@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FinancialTracket.DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class M1 : Migration
+    public partial class InitialBaseline : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,6 +37,7 @@ namespace FinancialTracket.DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.CheckConstraint("CK_Tag_Name_NonWhitespace", "length(trim(\"Name\")) > 0");
                 });
 
             migrationBuilder.CreateTable(

@@ -35,7 +35,7 @@ public partial class App : Application
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         using (AppDbContext db = serviceProvider.GetRequiredService<AppDbContext>()) {
-            db.Database.EnsureCreated();
+            db.Database.Migrate();
         }
 
         MainViewModel mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
