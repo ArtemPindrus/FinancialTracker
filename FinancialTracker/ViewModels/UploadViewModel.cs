@@ -37,8 +37,8 @@ namespace FinancialTracker.ViewModels {
             }
         }
 
-        public UploadViewModel(IConfiguration config) {
-            syncServer = new(config);
+        public UploadViewModel(SyncServer syncServer) {
+            this.syncServer = syncServer;
             syncServer.StartServer();
             syncServer.Start();
 

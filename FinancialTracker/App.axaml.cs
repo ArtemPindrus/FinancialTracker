@@ -5,16 +5,22 @@ using Avalonia.Markup.Xaml;
 using FinancialTracker.ViewModels;
 using FinancialTracker.Views;
 using FinancialTracket.DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace FinancialTracker;
 
 public partial class App : Application
 {
+    private static IServiceCollection? services;
+
+    public static void ConfigureServices(IServiceCollection serviceCollection) {
+        services = serviceCollection;
+    }
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -22,26 +28,9 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-#if !DEBUG
-        // Non-UI thread exceptions
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-        {
-            var ex = e.ExceptionObject as Exception;
-            Console.WriteLine($"AVALONIA: AppDomain unhandled: {ex?.Message}");
-        };
+        if (services is null) throw new Exception("Services were not configured.");
 
-        // Unobserved Task exceptions
-        TaskScheduler.UnobservedTaskException += (sender, e) =>
-        {
-            Console.WriteLine($"AVALONIA: Task unobserved: {e.Exception.Message}");
-            e.SetObserved();
-        };
-#endif
-
-        IConfiguration config = AppConfig.BuildDefaultConfiguration();
-
-        IServiceCollection services = new ServiceCollection()
-            .InjectCommonServices(config);
+        services.InjectCommonServices();
 
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 

@@ -15,8 +15,8 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels {
-    public partial class FinancesViewModel : ViewModelBase, IDisposable {
-        readonly AppDbContext dbContext;
+    public partial class FinancesViewModel : ViewModelBase {
+        readonly IDbContextFactory<AppDbContext> dbContextFactory;
         readonly CommandHistory commandHistory;
 
         public ICommand UndoCommand => commandHistory.UndoCommand;
@@ -38,22 +38,18 @@ namespace FinancialTracker.ViewModels {
             get;
         } = [];
 
-        public FinancesViewModel(AppDbContext dbContext) {
-            this.dbContext = dbContext;
+        public FinancesViewModel(IDbContextFactory<AppDbContext> dbContextFactory) {
+            this.dbContextFactory = dbContextFactory;
             commandHistory = new CommandHistory();
+
+            using AppDbContext dbContext = dbContextFactory.CreateDbContext();
 
             Tags = dbContext.Tags.Select(x => x.Name).ToList();
 
             InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
             InitializeMenuItems(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
 
-            PopulateTable();
-        }
-
-        public void Dispose() {
-            dbContext.Dispose();
-
-            GC.SuppressFinalize(this);
+            PopulateTable(dbContext);
         }
 
         private void InitializeMenuItems(List<MenuItem> menu, ICommand command) {
@@ -68,7 +64,13 @@ namespace FinancialTracker.ViewModels {
             }
         }
 
-        private void PopulateTable() {
+        private async Task PopulateTableAsync() {
+            using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+
+            PopulateTable(dbContext);
+        }
+
+        private void PopulateTable(AppDbContext dbContext) {
             var finances = dbContext.Finances.Include(x => x.Tags)
                 .Select(x => x.ToDto())
                 .ToList();
@@ -82,6 +84,8 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private async Task SaveChangesAsync() {
+            using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+
             var modified = Finances.Where(x => x.IsModified);
             var added = Finances.Where(x => x.IsAdded);
             var deleted = Finances.Where(x => x.IsDeleted);
@@ -111,14 +115,14 @@ namespace FinancialTracker.ViewModels {
 
             await dbContext.SaveChangesAsync();
 
-            PopulateTable();
+            PopulateTable(dbContext);
 
             commandHistory.Clear();
         }
 
         [RelayCommand]
         private void Rollback() {
-            PopulateTable();
+            PopulateTableAsync();
             commandHistory.Clear();
         }
 

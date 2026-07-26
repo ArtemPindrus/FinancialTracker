@@ -1,16 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using FinancialTracker.Legacy;
+using FinancialTracker.DataAccessLayer.Services;
 using FinancialTracker.StateMachines;
-using HarfBuzzSharp;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace FinancialTracker.ViewModels {
     public partial class DownloadViewModel : ViewModelBase {
@@ -19,11 +11,11 @@ namespace FinancialTracker.ViewModels {
         [ObservableProperty]
         object? currentViewModel;
 
-        public DownloadViewModel(IConfiguration config) {
-            syncClient = new(config);
-            syncClient.Start();
+        public DownloadViewModel(SyncClient syncClient) {
+            this.syncClient = syncClient;
+            this.syncClient.Start();
 
-            syncClient.PropertyChanged += SyncServer_PropertyChanged;
+            this.syncClient.PropertyChanged += SyncServer_PropertyChanged;
         }
 
         private void SyncServer_PropertyChanged(object? sender, PropertyChangedEventArgs e) {

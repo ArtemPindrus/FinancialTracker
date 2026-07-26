@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FinancialTracker.DataAccessLayer.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -8,15 +9,15 @@ using System.Threading.Tasks;
 
 namespace FinancialTracker.StateMachines {
     public partial class SyncClient : ObservableObject {
-        private readonly IConfiguration config;
+        private readonly string databasePath;
 
         private TcpClient? tcpClient;
 
         public IPAddress? RequestedIpAddress { get; private set; }
         public IPAddress? ConnectedIpAddress => (tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 
-        public SyncClient(IConfiguration config) {
-            this.config = config;
+        public SyncClient(IDatabasePathProvider databasePathProvider) {
+            databasePath = databasePathProvider.GetDatabasePath();
         }
 
         public void DispatchEventNotify(EventId eventId) {
@@ -50,7 +51,7 @@ namespace FinancialTracker.StateMachines {
 
             long fileSize = reader.ReadInt64();
 
-            using var fileStream = File.Create(config.GetDatabasePath());
+            using var fileStream = File.Create(databasePath);
             byte[] buffer = new byte[81920];
             long remaining = fileSize;
 

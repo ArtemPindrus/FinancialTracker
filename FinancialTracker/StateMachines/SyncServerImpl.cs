@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using FinancialTracker.DataAccessLayer.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -11,7 +12,7 @@ namespace FinancialTracker.StateMachines {
     public partial class SyncServer : ObservableObject, IDisposable {
         public const int Port = 8080;
 
-        private readonly IConfiguration config;
+        private readonly string databasePath;
 
         TcpListener? tcpListener;
         TcpClient? tcpClient;
@@ -20,8 +21,8 @@ namespace FinancialTracker.StateMachines {
 
         public string? ClientIp => tcpClient?.Client?.RemoteEndPoint?.ToString();
 
-        public SyncServer(IConfiguration config) {
-            this.config = config;
+        public SyncServer(IDatabasePathProvider databasePathProvider) {
+            databasePath = databasePathProvider.GetDatabasePath();
         }
 
         public void DispatchEventNotify(EventId eventId) {
@@ -92,15 +93,14 @@ namespace FinancialTracker.StateMachines {
             using var stream = tcpClient.GetStream();
             using var writer = new BinaryWriter(stream);
 
-            string dbPath = config.GetDatabasePath();
-            long fileSize = new FileInfo(dbPath).Length;
+            long fileSize = new FileInfo(databasePath).Length;
             writer.Write(fileSize);
             writer.Flush();
 
             try {
                 CancellationTokenSource cts = new(10000);
 
-                using var fileStream = File.OpenRead(dbPath);
+                using var fileStream = File.OpenRead(databasePath);
                 await fileStream.CopyToAsync(stream, cts.Token);
             } catch {
                 DispatchEventNotify(EventId.DISCONNECTED);
