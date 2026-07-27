@@ -34,7 +34,7 @@ public partial class App : Application
 
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        using (AppDbContext db = serviceProvider.GetRequiredService<AppDbContext>()) {
+        using (AppDbContext db = serviceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext()) {
             db.Database.Migrate();
         }
 
