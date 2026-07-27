@@ -20,10 +20,6 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial ViewModelBase? ViewModel { get; set; }
 
-    public List<string?> Items { get; } = [null, "1", "2", "3"];
-
-    public List<string> Selected { get; } = ["1", "2"];
-
     public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator,
         IViewCreator<RawQueryViewModel> rawQueryViewModelCreator,
         IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator,
@@ -36,7 +32,7 @@ public partial class MainViewModel : ViewModelBase
         this.uploadViewModelCreator = uploadViewModelCreator;
     }
 
-    partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
+    async partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
         if (ViewModel is IDisposable ds) ds.Dispose();
 
         if (newValue is null) {
@@ -54,5 +50,9 @@ public partial class MainViewModel : ViewModelBase
         };
 
         ViewModel = vm;
+
+        if (vm is FinancesViewModel fvm) {
+            await fvm.PopulateTableAsync();
+        }
     }
 }

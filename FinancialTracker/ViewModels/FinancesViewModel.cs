@@ -28,7 +28,7 @@ namespace FinancialTracker.ViewModels {
 
         public IList? SelectedFinancesBind { get; set; }
 
-        public List<string> Tags { get; }
+        public List<string> Tags { get; private set; }
 
         public List<MenuItem> AddTagsMenuItems { 
             get; 
@@ -42,14 +42,27 @@ namespace FinancialTracker.ViewModels {
             this.dbContextFactory = dbContextFactory;
             commandHistory = new CommandHistory();
 
+            // TODO: move into async operation
             using AppDbContext dbContext = dbContextFactory.CreateDbContext();
 
             Tags = dbContext.Tags.Select(x => x.Name).ToList();
 
             InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
             InitializeMenuItems(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
+        }
 
-            PopulateTable(dbContext);
+        public async Task PopulateTableAsync() {
+            await using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+
+            Finances.Clear();
+
+            var finances = dbContext.Finances.Include(x => x.Tags)
+                .AsAsyncEnumerable();
+
+
+            await foreach (var i in finances) {
+                Finances.Add(i.ToDto());
+            }
         }
 
         private void InitializeMenuItems(List<MenuItem> menu, ICommand command) {
@@ -64,65 +77,47 @@ namespace FinancialTracker.ViewModels {
             }
         }
 
-        private async Task PopulateTableAsync() {
-            using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
-
-            PopulateTable(dbContext);
-        }
-
-        private void PopulateTable(AppDbContext dbContext) {
-            var finances = dbContext.Finances.Include(x => x.Tags)
-                .Select(x => x.ToDto())
-                .ToList();
-
-            Finances.Clear();
-
-            foreach (var i in finances) {
-                Finances.Add(i);
-            }
-        }
-
         [RelayCommand]
         private async Task SaveChangesAsync() {
-            using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+            using (AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync()) {
+                var modified = Finances.Where(x => x.IsModified);
+                var added = Finances.Where(x => x.IsAdded);
+                var deleted = Finances.Where(x => x.IsDeleted);
 
-            var modified = Finances.Where(x => x.IsModified);
-            var added = Finances.Where(x => x.IsAdded);
-            var deleted = Finances.Where(x => x.IsDeleted);
+                foreach (var d in deleted) {
+                    var f = dbContext.Finances.Where(x => x.Id == d.Id).Single();
+                    dbContext.Finances.Remove(f);
+                }
 
-            foreach (var d in deleted) {
-                var f = dbContext.Finances.Where(x => x.Id == d.Id).Single();
-                dbContext.Finances.Remove(f);
+                foreach (FinanceRecordDto m in modified) {
+                    Finance f = dbContext.Finances
+                        .Where(x => x.Id == m.Id)
+                        .Include(x => x.Tags)
+                        .Single();
+
+                    await dbContext.AddMissingTagsToDatabaseAsync(m);
+
+                    DbHelper.SyncDtoToEntity(m, f, dbContext);
+                }
+
+                foreach (FinanceRecordDto a in added) {
+                    await dbContext.AddMissingTagsToDatabaseAsync(a);
+
+                    Finance f = a.ToEntity(dbContext);
+                    dbContext.Finances.Add(f);
+                }
+
+                await dbContext.SaveChangesAsync();
             }
-
-            foreach (FinanceRecordDto m in modified) {
-                Finance f = dbContext.Finances
-                    .Where(x => x.Id == m.Id)
-                    .Include(x => x.Tags)
-                    .Single();
-
-                await dbContext.AddMissingTagsToDatabaseAsync(m);
-
-                DbHelper.SyncDtoToEntity(m, f, dbContext);
-            }
-
-            foreach (FinanceRecordDto a in added) {
-                await dbContext.AddMissingTagsToDatabaseAsync(a);
-
-                Finance f = a.ToEntity(dbContext);
-                dbContext.Finances.Add(f);
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            PopulateTable(dbContext);
+            
+            await PopulateTableAsync();
 
             commandHistory.Clear();
         }
 
         [RelayCommand]
-        private void Rollback() {
-            PopulateTableAsync();
+        private async Task RollbackAsync() {
+            await PopulateTableAsync();
             commandHistory.Clear();
         }
 
