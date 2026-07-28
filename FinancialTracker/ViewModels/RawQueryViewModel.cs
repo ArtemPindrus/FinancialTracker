@@ -13,25 +13,21 @@ using System.Threading.Tasks;
 
 namespace FinancialTracker.ViewModels {
     public partial class RawQueryViewModel : ViewModelBase, IDisposable {
-        private readonly AppDbContext dbContext;
+        private readonly IDbContextFactory<AppDbContext> dbContextFactory;
 
         [ObservableProperty]
         private ViewModelBase? resultViewModel;
 
-        public RawQueryViewModel(AppDbContext dbContext) {
-            this.dbContext = dbContext;
+        public RawQueryViewModel(IDbContextFactory<AppDbContext> dbContextFactory) {
+            this.dbContextFactory = dbContextFactory;
         }
 
         public string? Query { get; set; }
 
-        public void Dispose() {
-            dbContext.Dispose();
-
-            GC.SuppressFinalize(this);
-        }
-
         [RelayCommand]
         private async Task ExecuteQueryAsync() {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
             try {
                 if (string.IsNullOrWhiteSpace(Query)) return;
 
@@ -45,6 +41,8 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private async Task QueryAsync() {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
             try {
                 using var con = dbContext.Database.GetDbConnection();
                 await con.OpenAsync();

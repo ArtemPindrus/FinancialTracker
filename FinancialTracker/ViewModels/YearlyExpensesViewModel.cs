@@ -1,16 +1,14 @@
-﻿using Avalonia.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FinancialTracket.DataAccessLayer;
-using FinancialTracket.DataAccessLayer.Models;
 using LiveChartsCore.Defaults;
 using Microsoft.EntityFrameworkCore;
+using SkiaSharp;
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace FinancialTracker.ViewModels {
     public partial class YearlyExpensesViewModel : ViewModelBase {
-        private readonly AppDbContext dbContext;
+        private readonly IDbContextFactory<AppDbContext> dbContextFactory;
 
         [ObservableProperty]
         public int selectedYear;
@@ -23,8 +21,8 @@ namespace FinancialTracker.ViewModels {
 
         public int[] AvailableYears { get; }
 
-        public YearlyExpensesViewModel(AppDbContext dbContext) {
-            this.dbContext = dbContext;
+        public YearlyExpensesViewModel(IDbContextFactory<AppDbContext> dbContextFactory) {
+            this.dbContextFactory = dbContextFactory;
 
             for (int i = 0; i < Expenses.Length; i++) {
                 Expenses[i] = new();
@@ -38,11 +36,13 @@ namespace FinancialTracker.ViewModels {
                 Total[i] = new();
             }
 
-            AvailableYears = dbContext.Finances
-                .Select(f => f.Date.Year)
-                .Distinct()
-                .OrderByDescending(y => y)
-                .ToArray();
+            using (var dbContext = dbContextFactory.CreateDbContext()) {
+                AvailableYears = dbContext.Finances
+                    .Select(f => f.Date.Year)
+                    .Distinct()
+                    .OrderByDescending(y => y)
+                    .ToArray();
+            }
 
             selectedYear = AvailableYears[0];
 
@@ -54,6 +54,8 @@ namespace FinancialTracker.ViewModels {
         }
 
         public void UpdateData() {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             // expenses
             var expenses = dbContext.Finances
                 .Where(f => f.Amount < 0)
