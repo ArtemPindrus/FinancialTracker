@@ -8,11 +8,7 @@ namespace FinancialTracker.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly IViewCreator<FinancesViewModel> financesViewModelCreator;
-    private readonly IViewCreator<RawQueryViewModel> rawQueryViewModelCreator;
-    private readonly IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator;
-    private readonly IViewCreator<DownloadViewModel> downloadViewModelCreator;
-    private readonly IViewCreator<UploadViewModel> uploadViewModelCreator;
+    private readonly ViewModelResolver viewModelResolver;
 
     [ObservableProperty]
     public partial NavigationViewItem? SelectedNavigationItem { get; set; }
@@ -20,16 +16,8 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial ViewModelBase? ViewModel { get; set; }
 
-    public MainViewModel(IViewCreator<FinancesViewModel> financesViewModelCreator,
-        IViewCreator<RawQueryViewModel> rawQueryViewModelCreator,
-        IViewCreator<YearlyExpensesViewModel> yearlyExpensesViewModelCreator,
-        IViewCreator<DownloadViewModel> downloadViewModelCreator,
-        IViewCreator<UploadViewModel> uploadViewModelCreator) {
-        this.financesViewModelCreator = financesViewModelCreator;
-        this.rawQueryViewModelCreator = rawQueryViewModelCreator;
-        this.yearlyExpensesViewModelCreator = yearlyExpensesViewModelCreator;
-        this.downloadViewModelCreator = downloadViewModelCreator;
-        this.uploadViewModelCreator = uploadViewModelCreator;
+    public MainViewModel(ViewModelResolver viewModelResolver) {
+        this.viewModelResolver = viewModelResolver;
     }
 
     async partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
@@ -41,11 +29,11 @@ public partial class MainViewModel : ViewModelBase
         }
 
         ViewModelBase vm = newValue.Content switch {
-            "Finances" => financesViewModelCreator.Create(),
-            "Raw Query" => rawQueryViewModelCreator.Create(),
-            "Yearly Expenses" => yearlyExpensesViewModelCreator.Create(),
-            "Download" => downloadViewModelCreator.Create(),
-            "Upload" => uploadViewModelCreator.Create(),
+            "Finances" => viewModelResolver.ResolveViewModel<FinancesViewModel>(),
+            "Raw Query" => viewModelResolver.ResolveViewModel<RawQueryViewModel>(),
+            "Yearly Expenses" => viewModelResolver.ResolveViewModel<YearlyExpensesViewModel>(),
+            "Download" => viewModelResolver.ResolveViewModel<DownloadViewModel>(),
+            "Upload" => viewModelResolver.ResolveViewModel<UploadViewModel>(),
             _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newValue?.Content}'")
         };
 

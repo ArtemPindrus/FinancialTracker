@@ -16,11 +16,7 @@ namespace FinancialTracker {
             services.AddTransient<DownloadViewModel>();
             services.AddTransient<UploadViewModel>();
 
-            services.AddSingleton<IViewCreator<FinancesViewModel>, ViewCreator<FinancesViewModel>>();
-            services.AddSingleton<IViewCreator<RawQueryViewModel>, ViewCreator<RawQueryViewModel>>();
-            services.AddSingleton<IViewCreator<YearlyExpensesViewModel>, ViewCreator<YearlyExpensesViewModel>>();
-            services.AddSingleton<IViewCreator<DownloadViewModel>, ViewCreator<DownloadViewModel>>();
-            services.AddSingleton<IViewCreator<UploadViewModel>, ViewCreator<UploadViewModel>>();
+            services.AddSingleton<ViewModelResolver>();
 
             services.AddTransient<SyncClient>();
             services.AddTransient<SyncServer>();
