@@ -2,7 +2,6 @@
 using FinancialTracker.Services;
 using FluentAvalonia.UI.Controls;
 using System;
-using System.Collections.Generic;
 
 namespace FinancialTracker.ViewModels;
 

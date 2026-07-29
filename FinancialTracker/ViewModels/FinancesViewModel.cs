@@ -1,12 +1,12 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Commands;
 using FinancialTracker.Models;
 using FinancialTracket.DataAccessLayer;
 using FinancialTracket.DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -56,13 +56,17 @@ namespace FinancialTracker.ViewModels {
 
             Finances.Clear();
 
-            var finances = dbContext.Finances.Include(x => x.Tags)
-                .AsAsyncEnumerable();
+            await Task.Run(() => {
+                var finances = dbContext.Finances
+                    .Include(x => x.Tags)
+                    .ToList();
 
-
-            await foreach (var i in finances) {
-                Finances.Add(i.ToDto());
-            }
+                foreach (var i in finances) {
+                    FinanceRecordDto item = i.ToDto();
+                    
+                    Dispatcher.UIThread.Invoke(() => Finances.Add(item));
+                }
+            });
         }
 
         private void InitializeMenuItems(List<MenuItem> menu, ICommand command) {
