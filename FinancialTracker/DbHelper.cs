@@ -11,8 +11,6 @@ namespace FinancialTracker {
     public static class DbHelper {
         public static Task SaveModificationsAsync(this AppDbContext dbContext, IEnumerable<FinanceRecordDto> finances) {
             return Task.Run(async () => {
-                await Task.Delay(TimeSpan.FromSeconds(5)); // Simulate delay
-
                 dbContext.ApplyModifications(finances);
                 dbContext.SaveChanges();
             });
