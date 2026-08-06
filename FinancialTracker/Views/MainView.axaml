@@ -19,7 +19,11 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <ui:NavigationView PaneDisplayMode="LeftMinimal" SelectedItem="{Binding SelectedNavigationItem}">
+    <ui:NavigationView
+        IsSettingsVisible="False"
+        PaneDisplayMode="Left"
+        OpenPaneLength="200"
+        SelectedItem="{Binding SelectedNavigationItem}">
         <ui:NavigationView.MenuItems>
             <ui:NavigationViewItem Content="Finances" />
             <ui:NavigationViewItem Content="Raw Query" />
