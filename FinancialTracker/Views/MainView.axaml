@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:FinancialTracker.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialogHost="using:DialogHostAvalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:FluentAvalonia.UI.Controls"
     xmlns:vm="using:FinancialTracker.ViewModels"
@@ -21,8 +22,8 @@
 
     <ui:NavigationView
         IsSettingsVisible="False"
-        PaneDisplayMode="Left"
         OpenPaneLength="200"
+        PaneDisplayMode="Left"
         SelectedItem="{Binding SelectedNavigationItem}">
         <ui:NavigationView.MenuItems>
             <ui:NavigationViewItem Content="Finances" />
@@ -40,9 +41,11 @@
             </ui:NavigationViewItem>
         </ui:NavigationView.MenuItems>
 
-        <Grid RowDefinitions="50, *">
-            <ContentControl Grid.Row="1" Content="{Binding ViewModel}" />
-        </Grid>
+        <dialogHost:DialogHost Identifier="ContentDialogHost">
+            <Grid RowDefinitions="50, *">
+                <ContentControl Grid.Row="1" Content="{Binding ViewModel}" />
+            </Grid>
+        </dialogHost:DialogHost>
     </ui:NavigationView>
 
 </UserControl>

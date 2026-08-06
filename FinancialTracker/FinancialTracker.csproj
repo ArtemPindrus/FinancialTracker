@@ -32,6 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\ProgressRingView.axaml.cs">
+      <DependentUpon>ProgressRingView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\TextResultView.axaml.cs">
       <DependentUpon>TextResultView.axaml</DependentUpon>
     </Compile>

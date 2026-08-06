@@ -1,13 +1,11 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using DialogHostAvalonia;
 using FinancialTracker.Commands;
 using FinancialTracker.Models;
 using FinancialTracker.ViewModels;
 using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,9 +18,6 @@ namespace FinancialTracker.StateMachines {
 
         [ObservableProperty]
         public partial List<string>? Tags { get; private set; }
-
-        [ObservableProperty]
-        public partial bool IsViewEnabled { get; private set; } = true;
 
         [ObservableProperty]
         public partial List<FinanceRecordDto>? Finances { get; set; }
@@ -39,7 +34,7 @@ namespace FinancialTracker.StateMachines {
         protected override void DispatchEventImpl(EventId eventId) => DispatchEvent(eventId);
 
         async void OnSavingEnter() {
-            _ = DialogHost.Show(new SavingDatabaseViewModel());
+            _ = DialogHostHelper.ShowMainDialog(new ProgressRingViewModel("Saving database..."));
 
             using (AppDbContext dbContext = dbContextFactory.CreateDbContext()) {
                 await dbContext.SaveModificationsAsync(Finances);
@@ -51,11 +46,11 @@ namespace FinancialTracker.StateMachines {
         }
 
         void OnSavingExit() {
-            DialogHost.Close(null);
+            DialogHostHelper.CloseMainDialog();
         }
 
         async void OnPopulatingEnter() {
-            IsViewEnabled = false;
+            _ = DialogHostHelper.ShowContentDialog(new ProgressRingViewModel("Querying database..."));
 
             using AppDbContext dbContext = dbContextFactory.CreateDbContext();
 
@@ -77,7 +72,7 @@ namespace FinancialTracker.StateMachines {
         }
 
         void OnPopulatingExit() {
-            IsViewEnabled = true;
+            DialogHostHelper.CloseContentDialog();
         }
 
         private void InitializeMenuItems(IList<MenuItem> menu, ICommand command) {

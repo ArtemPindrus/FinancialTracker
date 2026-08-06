@@ -24,8 +24,6 @@ namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : MainNavigationPaneViewModel {
         readonly FinancesViewModelStateMachine stateMachine;
 
-        public bool IsViewEnabled => stateMachine.IsViewEnabled;
-
         public List<string>? Tags => stateMachine.Tags;
 
         public ICommand UndoCommand => CommandHistory.UndoCommand;

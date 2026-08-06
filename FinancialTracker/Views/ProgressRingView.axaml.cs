@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace FinancialTracker.Views;
 
-public partial class SavingDatabaseView : UserControl
+public partial class ProgressRingView : UserControl
 {
-    public SavingDatabaseView()
+    public ProgressRingView()
     {
         InitializeComponent();
     }

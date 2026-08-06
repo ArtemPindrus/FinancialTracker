@@ -13,7 +13,7 @@
     WindowState="Maximized"
     mc:Ignorable="d">
 
-    <dialogHost:DialogHost>
+    <dialogHost:DialogHost Identifier="MainDialogHost">
         <views:MainView />
     </dialogHost:DialogHost>
 </Window>
