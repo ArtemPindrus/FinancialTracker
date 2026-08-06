@@ -17,7 +17,7 @@ namespace FinancialTracker {
         }
 
         public static void ApplyModifications(this AppDbContext dbContext, IEnumerable<FinanceRecordDto> finances) {
-            var modified = finances.Where(x => x.IsModified);
+            var modified = finances.Where(x => x.IsModified && !x.IsDeleted);
             var added = finances.Where(x => x.IsAdded);
             var deleted = finances.Where(x => x.IsDeleted);
 
