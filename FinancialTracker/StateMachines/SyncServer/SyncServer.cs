@@ -328,6 +328,13 @@ public partial class SyncServer
     private void CONNECTING_exit()
     {
         // Connecting behavior
+        // uml: exit / { OnConnectingExit(); }
+        {
+            // Step 1: execute action `OnConnectingExit();`
+            OnConnectingExit();
+        } // end of behavior for Connecting
+
+        // Connecting behavior
         // uml: exit
         {
             // Step 1: execute action ``

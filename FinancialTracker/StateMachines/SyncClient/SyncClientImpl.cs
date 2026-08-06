@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace FinancialTracker.StateMachines {
-    public partial class SyncClient : ObservableObject {
+    public partial class SyncClient : BaseStateMachine<SyncClient.EventId> {
         private readonly string databasePath;
 
         private TcpClient? tcpClient;
@@ -20,10 +20,7 @@ namespace FinancialTracker.StateMachines {
             databasePath = databasePathProvider.GetDatabasePath();
         }
 
-        public void DispatchEventNotify(EventId eventId) {
-            DispatchEvent(eventId);
-            OnPropertyChanged(nameof(stateId));
-        }
+        protected override void DispatchEventImpl(EventId eventId) => DispatchEvent(eventId);
 
         public void Connect(string ipAddress) {
             RequestedIpAddress = IPAddress.Parse(ipAddress);
@@ -51,6 +48,7 @@ namespace FinancialTracker.StateMachines {
 
             long fileSize = reader.ReadInt64();
 
+            // TODO: write to a temporary file and then replace the original file to avoid data loss in case of an error
             using var fileStream = File.Create(databasePath);
             byte[] buffer = new byte[81920];
             long remaining = fileSize;
@@ -58,6 +56,7 @@ namespace FinancialTracker.StateMachines {
             while (remaining > 0) {
                 int read = await stream.ReadAsync(buffer, 0, (int)Math.Min(buffer.Length, remaining));
                 if (read == 0) break;
+
                 await fileStream.WriteAsync(buffer, 0, read);
                 remaining -= read;
             }

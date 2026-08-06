@@ -9,14 +9,14 @@ using StateSmith.Runner;
 using StateSmith.SmGraph;
 
 // See https://github.com/StateSmith/tutorial-2/tree/main/lesson-1
-SmRunner syncServerRunner = new(diagramPath: "SyncServer.plantuml", new MyRenderConfig(), transpilerId: TranspilerId.CSharp);
-AddEnterAndExitCalls(syncServerRunner);
+string[] names = [ "SyncServer", "SyncClient", "FinancesViewModelStateMachine" ];
 
-SmRunner syncClientRunner = new(diagramPath: "SyncClient.plantuml", new MyRenderConfig(), transpilerId: TranspilerId.CSharp);
-AddEnterAndExitCalls(syncClientRunner);
+foreach (var name in names) {
+    SmRunner runner = new(diagramPath: @$"{name}\{name}.plantuml", new MyRenderConfig(), transpilerId: TranspilerId.CSharp);
+    AddEnterAndExitCalls(runner);
 
-syncServerRunner.Run();
-syncClientRunner.Run();
+    runner.Run();
+}
 
 // Funcs
 void AddEnterAndExitCalls(SmRunner runner) {
@@ -24,7 +24,8 @@ void AddEnterAndExitCalls(SmRunner runner) {
     sm.VisitTypeRecursively((State s) => {
         if (s.Behaviors.Any(b => b.ToString() == "enter")) {
             s.AddEnterAction($"On{s.Name}Enter();", 0);
-        } else if (s.Behaviors.Any(b => b.ToString() == "exit")) {
+        }
+        if (s.Behaviors.Any(b => b.ToString() == "exit")) {
             s.AddExitAction($"On{s.Name}Exit();", 0);
         }
     });

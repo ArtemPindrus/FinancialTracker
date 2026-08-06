@@ -9,9 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace FinancialTracker.StateMachines {
-    public partial class SyncServer : ObservableObject, IDisposable {
+    public partial class SyncServer : BaseStateMachine<SyncServer.EventId>, IDisposable {
         public const int Port = 8080;
-
+        private const int SendingTimeout = 10000;
         private readonly string databasePath;
 
         TcpListener? tcpListener;
@@ -25,10 +25,7 @@ namespace FinancialTracker.StateMachines {
             databasePath = databasePathProvider.GetDatabasePath();
         }
 
-        public void DispatchEventNotify(EventId eventId) {
-            DispatchEvent(eventId);
-            OnPropertyChanged(nameof(stateId));
-        }
+        protected override void DispatchEventImpl(EventId eventId) => DispatchEvent(eventId);
 
         public void StartServer() {
             tcpListener = new TcpListener(IPAddress.Any, Port);
@@ -98,7 +95,7 @@ namespace FinancialTracker.StateMachines {
             writer.Flush();
 
             try {
-                CancellationTokenSource cts = new(10000);
+                CancellationTokenSource cts = new(SendingTimeout);
 
                 using var fileStream = File.OpenRead(databasePath);
                 await fileStream.CopyToAsync(stream, cts.Token);

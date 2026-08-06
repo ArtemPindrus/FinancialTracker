@@ -294,6 +294,13 @@ public partial class SyncClient
     private void RECEIVING_exit()
     {
         // Receiving behavior
+        // uml: exit / { OnReceivingExit(); }
+        {
+            // Step 1: execute action `OnReceivingExit();`
+            OnReceivingExit();
+        } // end of behavior for Receiving
+
+        // Receiving behavior
         // uml: exit
         {
             // Step 1: execute action ``
