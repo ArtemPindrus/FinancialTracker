@@ -35,7 +35,7 @@
     <Compile Update="Views\TextResultView.axaml.cs">
       <DependentUpon>TextResultView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\UploadDIsconnectedView.axaml.cs">
+    <Compile Update="Views\UploadDisconnectedView.axaml.cs">
       <DependentUpon>UploadDisconnectedView.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\YearlyExpensesView.axaml.cs">
