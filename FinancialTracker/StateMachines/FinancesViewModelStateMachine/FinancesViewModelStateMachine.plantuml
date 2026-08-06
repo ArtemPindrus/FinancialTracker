@@ -1,0 +1,21 @@
+@startuml FinancesViewModelStateMachine
+state Idle
+state Saving {
+    Saving: enter / 
+}
+state Populating {
+    Populating: enter / 
+    Populating: exit / 
+}
+
+[*] -> Idle
+
+Idle --> Saving: SaveRequest
+Idle --> Populating: PopulateRequest
+
+Saving -> Populating: SaveSuccess
+
+Populating -> Idle: PopulateSuccess
+Populating -> Idle: PopulateCancel
+
+@enduml
