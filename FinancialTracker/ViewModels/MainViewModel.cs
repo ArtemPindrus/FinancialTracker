@@ -10,6 +10,8 @@ namespace FinancialTracker.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
+    private string lastNavigationItemContent = string.Empty;
+
     private readonly ViewModelResolver viewModelResolver;
 
     [ObservableProperty]
@@ -27,14 +29,18 @@ public partial class MainViewModel : ViewModelBase
     }
 
     async Task NavigateToSafeAsync(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
+        if (newValue?.Content is not string newNavigationString
+            || newNavigationString == lastNavigationItemContent) return;
+
         if (ViewModel is not null) {
             if (!ViewModel.CheckCanSafelyClose(out string message)) {
                 ICommand cancelCommand = new RelayCommand(() => {
                     DialogHostAvalonia.DialogHost.Close(null);
+                    SelectedNavigationItem = oldValue;
                 });
                 ICommand continueCommand = new RelayCommand(async () => {
                     DialogHostAvalonia.DialogHost.Close(null);
-                    await NavigateToAsync(newValue);
+                    await NavigateToAsync(newNavigationString);
                 });
 
                 MainNavigationUnsafePopupViewModel mainNavigationUnsafePopupViewModel = new(message, cancelCommand, continueCommand);
@@ -47,25 +53,21 @@ public partial class MainViewModel : ViewModelBase
             if (ViewModel is IDisposable ds) ds.Dispose();
         }
 
-        await NavigateToAsync(newValue);
+        await NavigateToAsync(newNavigationString);
     }
 
-    async Task NavigateToAsync(NavigationViewItem? newValue) {
-        if (newValue is null) {
-            ViewModel = null;
-            return;
-        }
-
-        MainNavigationPaneViewModel newVm = newValue.Content switch {
+    async Task NavigateToAsync(string newNavigationString) {
+        MainNavigationPaneViewModel newVm = newNavigationString switch {
             "Finances" => viewModelResolver.ResolveViewModel<FinancesViewModel>(),
             "Raw Query" => viewModelResolver.ResolveViewModel<RawQueryViewModel>(),
             "Yearly Expenses" => viewModelResolver.ResolveViewModel<YearlyExpensesViewModel>(),
             "Download" => viewModelResolver.ResolveViewModel<DownloadViewModel>(),
             "Upload" => viewModelResolver.ResolveViewModel<UploadViewModel>(),
-            _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newValue?.Content}'")
+            _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newNavigationString}'")
         };
 
         ViewModel = newVm;
+        lastNavigationItemContent = newNavigationString;
         await ViewModel.Initialize();
     }
 }
