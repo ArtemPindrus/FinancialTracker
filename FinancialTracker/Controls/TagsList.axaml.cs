@@ -57,6 +57,8 @@ public partial class TagsList : UserControl
             if (change.NewValue is ObservableCollection<string> newSelectedTags) {
                 newSelectedTags.CollectionChanged += NewSelectedTags_CollectionChanged;
             }
+        } else if (change.Property == TagsProperty) {
+            children.SetItemsSource(Tags);
         }
     }
 

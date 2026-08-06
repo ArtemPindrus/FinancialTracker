@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Commands;
 using FinancialTracker.Models;
@@ -22,6 +23,9 @@ namespace FinancialTracker.ViewModels {
         readonly CommandHistory commandHistory;
         readonly CancellationTokenSource populateTableCts;
 
+        [ObservableProperty]
+        public partial List<string>? Tags { get; private set; }
+
         public ICommand UndoCommand => commandHistory.UndoCommand;
         public ICommand RedoCommand => commandHistory.RedoCommand;
 
@@ -31,13 +35,11 @@ namespace FinancialTracker.ViewModels {
 
         public IList? SelectedFinancesBind { get; set; }
 
-        public List<string> Tags { get; private set; }
-
-        public List<MenuItem> AddTagsMenuItems { 
+        public ObservableCollection<MenuItem> AddTagsMenuItems { 
             get; 
         } = [];
 
-        public List<MenuItem> RemoveTagsMenuItems {
+        public ObservableCollection<MenuItem> RemoveTagsMenuItems {
             get;
         } = [];
 
@@ -45,14 +47,6 @@ namespace FinancialTracker.ViewModels {
             this.dbContextFactory = dbContextFactory;
             commandHistory = new CommandHistory();
             populateTableCts = new();
-
-            // TODO: move into async operation
-            using AppDbContext dbContext = dbContextFactory.CreateDbContext();
-
-            Tags = dbContext.Tags.Select(x => x.Name).ToList();
-
-            InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
-            InitializeMenuItems(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
         }
 
         public void Dispose() {
@@ -81,6 +75,13 @@ namespace FinancialTracker.ViewModels {
             Finances.Clear();
 
             await Task.Run(() => {
+                Tags = dbContext.Tags.Select(x => x.Name).ToList();
+
+                Dispatcher.UIThread.Invoke(() => {
+                    InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
+                    InitializeMenuItems(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
+                });
+
                 var finances = dbContext.Finances
                     .Include(x => x.Tags)
                     .ToList();
@@ -95,7 +96,9 @@ namespace FinancialTracker.ViewModels {
             }, populateTableCts.Token);
         }
 
-        private void InitializeMenuItems(List<MenuItem> menu, ICommand command) {
+        private void InitializeMenuItems(IList<MenuItem> menu, ICommand command) {
+            menu.Clear();
+
             foreach (var t in Tags) {
                 MenuItem m = new() {
                     Header = t,
@@ -112,7 +115,7 @@ namespace FinancialTracker.ViewModels {
             using (AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync()) {
                 var modified = Finances.Where(x => x.IsModified);
                 var added = Finances.Where(x => x.IsAdded);
-                var deleted = modified.Where(x => x.IsDeleted);
+                var deleted = Finances.Where(x => x.IsDeleted);
 
                 foreach (var d in deleted) {
                     var f = dbContext.Finances.Where(x => x.Id == d.Id).Single();
