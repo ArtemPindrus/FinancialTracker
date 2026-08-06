@@ -1,32 +1,43 @@
 @startuml SyncServer
 
-state Disconnected
-state Connecting {
-    Connecting: enter / 
-    Connecting: exit / 
-}
+state Idle
+state Open {
+    Open: enter / 
+    Open: exit / 
 
-state Connected {
-    Connected: exit /
+    state OpenIdle {
+        OpenIdle: enter / 
+    }
+    state ConnectionRequested
+    state Connected {
+        Connected: exit /
 
-    state ConnectedIdle
-    state Sending {
-        Sending: enter / 
+        state ConnectedIdle
+        state Sending {
+            Sending: enter / 
+            Sending: exit / 
+        }
+
+        [*] -> ConnectedIdle
+
+        ConnectedIdle -> Sending: SendRequest
     }
 
-    [*] -> ConnectedIdle
+    [*] --> OpenIdle
+
+    Open -left-> Idle: CloseServer
+
+    OpenIdle -> ConnectionRequested: GotConnection
+
+    ConnectionRequested -> Connected: ConnectionAccepted
+    ConnectionRequested -> OpenIdle: ConnectionRejected / OnConnectionRejected();
+
+    Connected -left-> OpenIdle: Disconnected
 }
 
-[*] -> Disconnected
-Disconnected -> Connecting: ConnectRequest
 
-Connecting -> Disconnected: ConnectionFailed
-Connecting -> Disconnected: ConnectionCanceled
-Connecting --> Connected: ConnectionSucceeded
+[*] --> Idle
 
-ConnectedIdle -> Sending: SendRequest
-Sending -> ConnectedIdle: SendingCompleted
-
-Connected -> Disconnected: Disconnected
+Idle -> Open: StartServer
 
 @enduml

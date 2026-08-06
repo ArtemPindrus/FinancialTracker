@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FinancialTracker.DataAccessLayer.Services;
-using Microsoft.Extensions.Configuration;
+﻿using FinancialTracker.DataAccessLayer.Services;
 using System;
 using System.IO;
 using System.Net;
@@ -11,81 +9,65 @@ using System.Threading.Tasks;
 namespace FinancialTracker.StateMachines {
     public partial class SyncServer : BaseStateMachine<SyncServer.EventId>, IDisposable {
         public const int Port = 8080;
-        private const int SendingTimeout = 10000;
         private readonly string databasePath;
 
-        TcpListener? tcpListener;
+        TcpListener tcpListener;
         TcpClient? tcpClient;
 
-        CancellationTokenSource acceptCts = new();
+        CancellationTokenSource? sendCts;
 
         public string? ClientIp => tcpClient?.Client?.RemoteEndPoint?.ToString();
 
         public SyncServer(IDatabasePathProvider databasePathProvider) {
             databasePath = databasePathProvider.GetDatabasePath();
+
+            tcpListener = new(IPAddress.Any, Port);
         }
 
         protected override void DispatchEventImpl(EventId eventId) => DispatchEvent(eventId);
 
-        public void StartServer() {
-            tcpListener = new TcpListener(IPAddress.Any, Port);
-            tcpListener.Start(1);
-        }
-
         public void Dispose() {
             tcpListener?.Dispose();
-            tcpClient?.Dispose();
+            GetRidOfClient();
 
             GC.SuppressFinalize(this);
         }
 
-        public void TryConnecting() {
-            DispatchEventNotify(EventId.CONNECTREQUEST);
+        void GetRidOfClient() {
+            tcpClient?.Dispose();
+            tcpClient = null;
         }
 
-        public void CancelConnection() {
-            DispatchEventNotify(EventId.CONNECTIONCANCELED);
+        void OnOpenEnter() {
+            tcpListener.Start(1);
         }
 
-        public void Disconnect() {
-            DispatchEventNotify(EventId.DISCONNECTED);
+        void OnOpenExit() {
+            tcpListener.Stop();
+
+            GetRidOfClient();
         }
 
-        public void Send() {
-            DispatchEventNotify(EventId.SENDREQUEST);
+        async void OnOpenIdleEnter() {
+            tcpClient = await tcpListener.AcceptTcpClientAsync();
+
+            DispatchEventNotify(EventId.GOTCONNECTION);
         }
 
-        void CancelTryConnect() {
-            acceptCts.Cancel();
-            acceptCts = new CancellationTokenSource();
+        void OnConnectionRejected() {
+            GetRidOfClient();
         }
 
-        private void OnConnectedExit() {
-            tcpClient?.Close();
+        void OnConnectedExit() {
+            GetRidOfClient();
         }
 
-        private async Task OnConnectingEnter() {
-            if (tcpListener is null) {
-                DispatchEventNotify(EventId.CONNECTIONFAILED);
-                return;
-            }
-
-            try {
-                tcpClient = await tcpListener.AcceptTcpClientAsync(acceptCts.Token);
-                DispatchEventNotify(EventId.CONNECTIONSUCCEEDED);
-            } catch {
-                DispatchEventNotify(EventId.CONNECTIONFAILED);
-            }
-        }
-
-        private void OnConnectingExit() {
-            CancelTryConnect();
-        }
-
-        private async Task OnSendingEnter() {
+        async void OnSendingEnter() {
             if (tcpClient is null) {
                 throw new Exception("Client isn't connected!");
             }
+
+            sendCts = new();
 
             using var stream = tcpClient.GetStream();
             using var writer = new BinaryWriter(stream);
@@ -95,17 +77,17 @@ namespace FinancialTracker.StateMachines {
             writer.Flush();
 
             try {
-                CancellationTokenSource cts = new(SendingTimeout);
-
                 using var fileStream = File.OpenRead(databasePath);
-                await fileStream.CopyToAsync(stream, cts.Token);
+                await fileStream.CopyToAsync(stream, sendCts.Token);
             } catch {
+                // noop
+            } finally {
                 DispatchEventNotify(EventId.DISCONNECTED);
-
-                return;
             }
+        }
 
-            DispatchEventNotify(EventId.SENDINGCOMPLETED);
+        void OnSendingExit() {
+            sendCts?.Cancel();
         }
     }
 }

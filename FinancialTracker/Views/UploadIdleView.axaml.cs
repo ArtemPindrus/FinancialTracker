@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace FinancialTracker.Views;
 
-public partial class UploadConnectingView : UserControl
+public partial class UploadIdleView : UserControl
 {
-    public UploadConnectingView()
+    public UploadIdleView()
     {
         InitializeComponent();
     }

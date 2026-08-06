@@ -10,13 +10,13 @@ public partial class SyncServer
 {
     public enum EventId
     {
-        CONNECTIONCANCELED = 0,
-        CONNECTIONFAILED = 1,
-        CONNECTIONSUCCEEDED = 2,
-        CONNECTREQUEST = 3,
-        DISCONNECTED = 4,
-        SENDINGCOMPLETED = 5,
-        SENDREQUEST = 6,
+        CLOSESERVER = 0,
+        CONNECTIONACCEPTED = 1,
+        CONNECTIONREJECTED = 2,
+        DISCONNECTED = 3,
+        GOTCONNECTION = 4,
+        SENDREQUEST = 5,
+        STARTSERVER = 6,
     }
 
     public const int EventIdCount = 7;
@@ -24,23 +24,27 @@ public partial class SyncServer
     public enum StateId
     {
         ROOT = 0,
-        CONNECTED = 1,
-        CONNECTEDIDLE = 2,
-        SENDING = 3,
-        CONNECTING = 4,
-        DISCONNECTED = 5,
+        IDLE = 1,
+        OPEN = 2,
+        CONNECTED = 3,
+        CONNECTEDIDLE = 4,
+        SENDING = 5,
+        CONNECTIONREQUESTED = 6,
+        OPENIDLE = 7,
     }
 
-    public const int StateIdCount = 6;
+    public const int StateIdCount = 8;
 
     // Subtree meta data generation can be disabled in settings.
     // Details: https://github.com/StateSmith/StateSmith/issues/538
-    public const int ROOT_SubtreeEndId = 5;  // State 'SyncServer' subtree extends from itself (id: 0) to state 'Disconnected' (id: 5)
-    public const int CONNECTED_SubtreeEndId = 3;  // State 'Connected' subtree extends from itself (id: 1) to state 'Sending' (id: 3)
-    public const int CONNECTEDIDLE_SubtreeEndId = 2;  // State 'ConnectedIdle' subtree extends from itself (id: 2) to state 'ConnectedIdle' (id: 2)
-    public const int SENDING_SubtreeEndId = 3;  // State 'Sending' subtree extends from itself (id: 3) to state 'Sending' (id: 3)
-    public const int CONNECTING_SubtreeEndId = 4;  // State 'Connecting' subtree extends from itself (id: 4) to state 'Connecting' (id: 4)
-    public const int DISCONNECTED_SubtreeEndId = 5;  // State 'Disconnected' subtree extends from itself (id: 5) to state 'Disconnected' (id: 5)
+    public const int ROOT_SubtreeEndId = 7;  // State 'SyncServer' subtree extends from itself (id: 0) to state 'OpenIdle' (id: 7)
+    public const int IDLE_SubtreeEndId = 1;  // State 'Idle' subtree extends from itself (id: 1) to state 'Idle' (id: 1)
+    public const int OPEN_SubtreeEndId = 7;  // State 'Open' subtree extends from itself (id: 2) to state 'OpenIdle' (id: 7)
+    public const int CONNECTED_SubtreeEndId = 5;  // State 'Connected' subtree extends from itself (id: 3) to state 'Sending' (id: 5)
+    public const int CONNECTEDIDLE_SubtreeEndId = 4;  // State 'ConnectedIdle' subtree extends from itself (id: 4) to state 'ConnectedIdle' (id: 4)
+    public const int SENDING_SubtreeEndId = 5;  // State 'Sending' subtree extends from itself (id: 5) to state 'Sending' (id: 5)
+    public const int CONNECTIONREQUESTED_SubtreeEndId = 6;  // State 'ConnectionRequested' subtree extends from itself (id: 6) to state 'ConnectionRequested' (id: 6)
+    public const int OPENIDLE_SubtreeEndId = 7;  // State 'OpenIdle' subtree extends from itself (id: 7) to state 'OpenIdle' (id: 7)
 
     // Used internally by state machine. Feel free to inspect, but don't modify.
     public StateId stateId;
@@ -65,14 +69,14 @@ public partial class SyncServer
             // ROOT.<InitialState> is a pseudo state and cannot have an `enter` trigger.
 
             // ROOT.<InitialState> behavior
-            // uml: TransitionTo(Disconnected)
+            // uml: TransitionTo(Idle)
             {
                 // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
 
                 // Step 2: Transition action: ``.
 
-                // Step 3: Enter/move towards transition target `Disconnected`.
-                DISCONNECTED_enter();
+                // Step 3: Enter/move towards transition target `Idle`.
+                IDLE_enter();
 
                 // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
                 return;
@@ -91,11 +95,28 @@ public partial class SyncServer
                 // No events handled by this state (or its ancestors).
                 break;
 
+            // STATE: Idle
+            case StateId.IDLE:
+                switch (eventId)
+                {
+                    case EventId.STARTSERVER: IDLE_startserver(); break;
+                }
+                break;
+
+            // STATE: Open
+            case StateId.OPEN:
+                switch (eventId)
+                {
+                    case EventId.CLOSESERVER: OPEN_closeserver(); break;
+                }
+                break;
+
             // STATE: Connected
             case StateId.CONNECTED:
                 switch (eventId)
                 {
                     case EventId.DISCONNECTED: CONNECTED_disconnected(); break;
+                    case EventId.CLOSESERVER: OPEN_closeserver(); break; // First ancestor handler for this event
                 }
                 break;
 
@@ -104,6 +125,7 @@ public partial class SyncServer
                 switch (eventId)
                 {
                     case EventId.SENDREQUEST: CONNECTEDIDLE_sendrequest(); break;
+                    case EventId.CLOSESERVER: OPEN_closeserver(); break; // First ancestor handler for this event
                     case EventId.DISCONNECTED: CONNECTED_disconnected(); break; // First ancestor handler for this event
                 }
                 break;
@@ -112,26 +134,27 @@ public partial class SyncServer
             case StateId.SENDING:
                 switch (eventId)
                 {
-                    case EventId.SENDINGCOMPLETED: SENDING_sendingcompleted(); break;
+                    case EventId.CLOSESERVER: OPEN_closeserver(); break; // First ancestor handler for this event
                     case EventId.DISCONNECTED: CONNECTED_disconnected(); break; // First ancestor handler for this event
                 }
                 break;
 
-            // STATE: Connecting
-            case StateId.CONNECTING:
+            // STATE: ConnectionRequested
+            case StateId.CONNECTIONREQUESTED:
                 switch (eventId)
                 {
-                    case EventId.CONNECTIONFAILED: CONNECTING_connectionfailed(); break;
-                    case EventId.CONNECTIONCANCELED: CONNECTING_connectioncanceled(); break;
-                    case EventId.CONNECTIONSUCCEEDED: CONNECTING_connectionsucceeded(); break;
+                    case EventId.CONNECTIONACCEPTED: CONNECTIONREQUESTED_connectionaccepted(); break;
+                    case EventId.CONNECTIONREJECTED: CONNECTIONREQUESTED_connectionrejected(); break;
+                    case EventId.CLOSESERVER: OPEN_closeserver(); break; // First ancestor handler for this event
                 }
                 break;
 
-            // STATE: Disconnected
-            case StateId.DISCONNECTED:
+            // STATE: OpenIdle
+            case StateId.OPENIDLE:
                 switch (eventId)
                 {
-                    case EventId.CONNECTREQUEST: DISCONNECTED_connectrequest(); break;
+                    case EventId.GOTCONNECTION: OPENIDLE_gotconnection(); break;
+                    case EventId.CLOSESERVER: OPEN_closeserver(); break; // First ancestor handler for this event
                 }
                 break;
         }
@@ -146,15 +169,19 @@ public partial class SyncServer
         {
             switch (this.stateId)
             {
+                case StateId.IDLE: IDLE_exit(); break;
+
+                case StateId.OPEN: OPEN_exit(); break;
+
                 case StateId.CONNECTED: CONNECTED_exit(); break;
 
                 case StateId.CONNECTEDIDLE: CONNECTEDIDLE_exit(); break;
 
                 case StateId.SENDING: SENDING_exit(); break;
 
-                case StateId.CONNECTING: CONNECTING_exit(); break;
+                case StateId.CONNECTIONREQUESTED: CONNECTIONREQUESTED_exit(); break;
 
-                case StateId.DISCONNECTED: DISCONNECTED_exit(); break;
+                case StateId.OPENIDLE: OPENIDLE_exit(); break;
 
                 default: return;  // Just to be safe. Prevents infinite loop if state ID memory is somehow corrupted.
             }
@@ -169,6 +196,113 @@ public partial class SyncServer
     private void ROOT_enter()
     {
         this.stateId = StateId.ROOT;
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state IDLE
+    ////////////////////////////////////////////////////////////////////////////////
+
+    private void IDLE_enter()
+    {
+        this.stateId = StateId.IDLE;
+    }
+
+    private void IDLE_exit()
+    {
+        this.stateId = StateId.ROOT;
+    }
+
+    private void IDLE_startserver()
+    {
+        // Idle behavior
+        // uml: StartServer TransitionTo(Open)
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            IDLE_exit();
+
+            // Step 2: Transition action: ``.
+
+            // Step 3: Enter/move towards transition target `Open`.
+            OPEN_enter();
+
+            // Open.<InitialState> behavior
+            // uml: TransitionTo(OpenIdle)
+            {
+                // Step 1: Exit states until we reach `Open` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+
+                // Step 2: Transition action: ``.
+
+                // Step 3: Enter/move towards transition target `OpenIdle`.
+                OPENIDLE_enter();
+
+                // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+                return;
+            } // end of behavior for Open.<InitialState>
+        } // end of behavior for Idle
+
+        // No ancestor handles this event.
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state OPEN
+    ////////////////////////////////////////////////////////////////////////////////
+
+    private void OPEN_enter()
+    {
+        this.stateId = StateId.OPEN;
+
+        // Open behavior
+        // uml: enter / { OnOpenEnter(); }
+        {
+            // Step 1: execute action `OnOpenEnter();`
+            OnOpenEnter();
+        } // end of behavior for Open
+
+        // Open behavior
+        // uml: enter
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Open
+    }
+
+    private void OPEN_exit()
+    {
+        // Open behavior
+        // uml: exit / { OnOpenExit(); }
+        {
+            // Step 1: execute action `OnOpenExit();`
+            OnOpenExit();
+        } // end of behavior for Open
+
+        // Open behavior
+        // uml: exit
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Open
+
+        this.stateId = StateId.ROOT;
+    }
+
+    private void OPEN_closeserver()
+    {
+        // Open behavior
+        // uml: CloseServer TransitionTo(Idle)
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            ExitUpToStateHandler(StateId.ROOT);
+
+            // Step 2: Transition action: ``.
+
+            // Step 3: Enter/move towards transition target `Idle`.
+            IDLE_enter();
+
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for Open
+
+        // No ancestor handles this event.
     }
 
 
@@ -196,21 +330,21 @@ public partial class SyncServer
             // Step 1: execute action ``
         } // end of behavior for Connected
 
-        this.stateId = StateId.ROOT;
+        this.stateId = StateId.OPEN;
     }
 
     private void CONNECTED_disconnected()
     {
         // Connected behavior
-        // uml: Disconnected TransitionTo(Disconnected)
+        // uml: Disconnected TransitionTo(OpenIdle)
         {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            ExitUpToStateHandler(StateId.ROOT);
+            // Step 1: Exit states until we reach `Open` state (Least Common Ancestor for transition).
+            ExitUpToStateHandler(StateId.OPEN);
 
             // Step 2: Transition action: ``.
 
-            // Step 3: Enter/move towards transition target `Disconnected`.
-            DISCONNECTED_enter();
+            // Step 3: Enter/move towards transition target `OpenIdle`.
+            OPENIDLE_enter();
 
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
@@ -279,117 +413,44 @@ public partial class SyncServer
 
     private void SENDING_exit()
     {
-        this.stateId = StateId.CONNECTED;
-    }
-
-    private void SENDING_sendingcompleted()
-    {
         // Sending behavior
-        // uml: SendingCompleted TransitionTo(ConnectedIdle)
+        // uml: exit / { OnSendingExit(); }
         {
-            // Step 1: Exit states until we reach `Connected` state (Least Common Ancestor for transition).
-            SENDING_exit();
-
-            // Step 2: Transition action: ``.
-
-            // Step 3: Enter/move towards transition target `ConnectedIdle`.
-            CONNECTEDIDLE_enter();
-
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
+            // Step 1: execute action `OnSendingExit();`
+            OnSendingExit();
         } // end of behavior for Sending
 
-        // No ancestor handles this event.
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state CONNECTING
-    ////////////////////////////////////////////////////////////////////////////////
-
-    private void CONNECTING_enter()
-    {
-        this.stateId = StateId.CONNECTING;
-
-        // Connecting behavior
-        // uml: enter / { OnConnectingEnter(); }
-        {
-            // Step 1: execute action `OnConnectingEnter();`
-            OnConnectingEnter();
-        } // end of behavior for Connecting
-
-        // Connecting behavior
-        // uml: enter
-        {
-            // Step 1: execute action ``
-        } // end of behavior for Connecting
-    }
-
-    private void CONNECTING_exit()
-    {
-        // Connecting behavior
-        // uml: exit / { OnConnectingExit(); }
-        {
-            // Step 1: execute action `OnConnectingExit();`
-            OnConnectingExit();
-        } // end of behavior for Connecting
-
-        // Connecting behavior
+        // Sending behavior
         // uml: exit
         {
             // Step 1: execute action ``
-        } // end of behavior for Connecting
+        } // end of behavior for Sending
 
-        this.stateId = StateId.ROOT;
+        this.stateId = StateId.CONNECTED;
     }
 
-    private void CONNECTING_connectioncanceled()
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state CONNECTIONREQUESTED
+    ////////////////////////////////////////////////////////////////////////////////
+
+    private void CONNECTIONREQUESTED_enter()
     {
-        // Connecting behavior
-        // uml: ConnectionCanceled TransitionTo(Disconnected)
-        {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            CONNECTING_exit();
-
-            // Step 2: Transition action: ``.
-
-            // Step 3: Enter/move towards transition target `Disconnected`.
-            DISCONNECTED_enter();
-
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for Connecting
-
-        // No ancestor handles this event.
+        this.stateId = StateId.CONNECTIONREQUESTED;
     }
 
-    private void CONNECTING_connectionfailed()
+    private void CONNECTIONREQUESTED_exit()
     {
-        // Connecting behavior
-        // uml: ConnectionFailed TransitionTo(Disconnected)
-        {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            CONNECTING_exit();
-
-            // Step 2: Transition action: ``.
-
-            // Step 3: Enter/move towards transition target `Disconnected`.
-            DISCONNECTED_enter();
-
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for Connecting
-
-        // No ancestor handles this event.
+        this.stateId = StateId.OPEN;
     }
 
-    private void CONNECTING_connectionsucceeded()
+    private void CONNECTIONREQUESTED_connectionaccepted()
     {
-        // Connecting behavior
-        // uml: ConnectionSucceeded TransitionTo(Connected)
+        // ConnectionRequested behavior
+        // uml: ConnectionAccepted TransitionTo(Connected)
         {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            CONNECTING_exit();
+            // Step 1: Exit states until we reach `Open` state (Least Common Ancestor for transition).
+            CONNECTIONREQUESTED_exit();
 
             // Step 2: Transition action: ``.
 
@@ -409,42 +470,76 @@ public partial class SyncServer
                 // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
                 return;
             } // end of behavior for Connected.<InitialState>
-        } // end of behavior for Connecting
+        } // end of behavior for ConnectionRequested
+
+        // No ancestor handles this event.
+    }
+
+    private void CONNECTIONREQUESTED_connectionrejected()
+    {
+        // ConnectionRequested behavior
+        // uml: ConnectionRejected / { OnConnectionRejected(); } TransitionTo(OpenIdle)
+        {
+            // Step 1: Exit states until we reach `Open` state (Least Common Ancestor for transition).
+            CONNECTIONREQUESTED_exit();
+
+            // Step 2: Transition action: `OnConnectionRejected();`.
+            OnConnectionRejected();
+
+            // Step 3: Enter/move towards transition target `OpenIdle`.
+            OPENIDLE_enter();
+
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for ConnectionRequested
 
         // No ancestor handles this event.
     }
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state DISCONNECTED
+    // event handlers for state OPENIDLE
     ////////////////////////////////////////////////////////////////////////////////
 
-    private void DISCONNECTED_enter()
+    private void OPENIDLE_enter()
     {
-        this.stateId = StateId.DISCONNECTED;
-    }
+        this.stateId = StateId.OPENIDLE;
 
-    private void DISCONNECTED_exit()
-    {
-        this.stateId = StateId.ROOT;
-    }
-
-    private void DISCONNECTED_connectrequest()
-    {
-        // Disconnected behavior
-        // uml: ConnectRequest TransitionTo(Connecting)
+        // OpenIdle behavior
+        // uml: enter / { OnOpenIdleEnter(); }
         {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            DISCONNECTED_exit();
+            // Step 1: execute action `OnOpenIdleEnter();`
+            OnOpenIdleEnter();
+        } // end of behavior for OpenIdle
+
+        // OpenIdle behavior
+        // uml: enter
+        {
+            // Step 1: execute action ``
+        } // end of behavior for OpenIdle
+    }
+
+    private void OPENIDLE_exit()
+    {
+        this.stateId = StateId.OPEN;
+    }
+
+    private void OPENIDLE_gotconnection()
+    {
+        // OpenIdle behavior
+        // uml: GotConnection TransitionTo(ConnectionRequested)
+        {
+            // Step 1: Exit states until we reach `Open` state (Least Common Ancestor for transition).
+            OPENIDLE_exit();
 
             // Step 2: Transition action: ``.
 
-            // Step 3: Enter/move towards transition target `Connecting`.
-            CONNECTING_enter();
+            // Step 3: Enter/move towards transition target `ConnectionRequested`.
+            CONNECTIONREQUESTED_enter();
 
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
-        } // end of behavior for Disconnected
+        } // end of behavior for OpenIdle
 
         // No ancestor handles this event.
     }
@@ -455,11 +550,13 @@ public partial class SyncServer
         switch (id)
         {
             case StateId.ROOT: return "ROOT";
+            case StateId.IDLE: return "IDLE";
+            case StateId.OPEN: return "OPEN";
             case StateId.CONNECTED: return "CONNECTED";
             case StateId.CONNECTEDIDLE: return "CONNECTEDIDLE";
             case StateId.SENDING: return "SENDING";
-            case StateId.CONNECTING: return "CONNECTING";
-            case StateId.DISCONNECTED: return "DISCONNECTED";
+            case StateId.CONNECTIONREQUESTED: return "CONNECTIONREQUESTED";
+            case StateId.OPENIDLE: return "OPENIDLE";
             default: return "?";
         }
     }
@@ -469,13 +566,13 @@ public partial class SyncServer
     {
         switch (id)
         {
-            case EventId.CONNECTIONCANCELED: return "CONNECTIONCANCELED";
-            case EventId.CONNECTIONFAILED: return "CONNECTIONFAILED";
-            case EventId.CONNECTIONSUCCEEDED: return "CONNECTIONSUCCEEDED";
-            case EventId.CONNECTREQUEST: return "CONNECTREQUEST";
+            case EventId.CLOSESERVER: return "CLOSESERVER";
+            case EventId.CONNECTIONACCEPTED: return "CONNECTIONACCEPTED";
+            case EventId.CONNECTIONREJECTED: return "CONNECTIONREJECTED";
             case EventId.DISCONNECTED: return "DISCONNECTED";
-            case EventId.SENDINGCOMPLETED: return "SENDINGCOMPLETED";
+            case EventId.GOTCONNECTION: return "GOTCONNECTION";
             case EventId.SENDREQUEST: return "SENDREQUEST";
+            case EventId.STARTSERVER: return "STARTSERVER";
             default: return "?";
         }
     }
@@ -487,11 +584,13 @@ public partial class SyncServer
         switch (id)
         {
             case StateId.ROOT: return StateId.ROOT;
-            case StateId.CONNECTED: return StateId.ROOT;
+            case StateId.IDLE: return StateId.ROOT;
+            case StateId.OPEN: return StateId.ROOT;
+            case StateId.CONNECTED: return StateId.OPEN;
             case StateId.CONNECTEDIDLE: return StateId.CONNECTED;
             case StateId.SENDING: return StateId.CONNECTED;
-            case StateId.CONNECTING: return StateId.ROOT;
-            case StateId.DISCONNECTED: return StateId.ROOT;
+            case StateId.CONNECTIONREQUESTED: return StateId.OPEN;
+            case StateId.OPENIDLE: return StateId.OPEN;
             default: return StateId.ROOT;
         }
     }

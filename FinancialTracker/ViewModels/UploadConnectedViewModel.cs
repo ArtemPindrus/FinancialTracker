@@ -1,16 +1,13 @@
 ﻿using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels {
-    public class UploadConnectedViewModel : ViewModelBase {
-        public string ClientId { get; }
-
+    public class UploadConnectedViewModel : UploadOpenViewModel {
         public ICommand DisconnectCommand { get; }
-        public ICommand SendCommand { get; }
+        public string IpAddress { get; }
 
-        public UploadConnectedViewModel(string clientId, ICommand disconnectCommand, ICommand sendCommand) {
-            ClientId = clientId;
+        public UploadConnectedViewModel(ICommand stopServerCommand, ICommand disconnectCommand, string ipAddress) : base(stopServerCommand) {
             DisconnectCommand = disconnectCommand;
-            SendCommand = sendCommand;
+            IpAddress = ipAddress;
         }
     }
 }

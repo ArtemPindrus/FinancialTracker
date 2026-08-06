@@ -1,13 +1,16 @@
 <UserControl
-    x:Class="FinancialTracker.Views.UploadDisconnectedView"
+    x:Class="FinancialTracker.Views.UploadOpenIdleView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:FinancialTracker.ViewModels"
+    xmlns:vm="using:FinancialTracker.ViewModels"
     d:DesignHeight="450"
-    x:DataType="viewmodels:UploadDisconnectedViewModel"
     d:DesignWidth="800"
+    x:DataType="vm:UploadOpenIdleViewModel"
     mc:Ignorable="d">
-    <Button Content="Try connecting" Command="{Binding TryConnectingCommand}" />
+    <StackPanel>
+        <TextBlock Text="Waiting for incoming connections..." />
+        <Button Command="{Binding StopServerCommand}" Content="Stop server" />
+    </StackPanel>
 </UserControl>
