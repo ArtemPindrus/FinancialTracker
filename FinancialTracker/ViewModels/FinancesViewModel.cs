@@ -7,10 +7,12 @@ using FinancialTracker.Models;
 using FinancialTracket.DataAccessLayer;
 using FinancialTracket.DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -18,6 +20,7 @@ namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : MainNavigationPaneViewModel, IDisposable {
         readonly IDbContextFactory<AppDbContext> dbContextFactory;
         readonly CommandHistory commandHistory;
+        readonly CancellationTokenSource populateTableCts;
 
         public ICommand UndoCommand => commandHistory.UndoCommand;
         public ICommand RedoCommand => commandHistory.RedoCommand;
@@ -41,6 +44,7 @@ namespace FinancialTracker.ViewModels {
         public FinancesViewModel(IDbContextFactory<AppDbContext> dbContextFactory) {
             this.dbContextFactory = dbContextFactory;
             commandHistory = new CommandHistory();
+            populateTableCts = new();
 
             // TODO: move into async operation
             using AppDbContext dbContext = dbContextFactory.CreateDbContext();
@@ -50,8 +54,15 @@ namespace FinancialTracker.ViewModels {
             InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
             InitializeMenuItems(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
         }
+
+        public void Dispose() {
+            populateTableCts.Cancel();
+        }
+
         public override bool CheckCanSafelyClose(out string message) {
-            if(Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded)) {
+            populateTableCts.Cancel();
+
+            if (Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded)) {
                 message = "There are unsaved changes. Are you sure you want to close?";
                 return false;
             } else {
@@ -60,8 +71,12 @@ namespace FinancialTracker.ViewModels {
             }
         }
 
+        public override async Task Initialize() {
+            await PopulateTableAsync();
+        }
+
         public async Task PopulateTableAsync() {
-            await using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+            await using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync(populateTableCts.Token);
 
             Finances.Clear();
 
@@ -71,11 +86,13 @@ namespace FinancialTracker.ViewModels {
                     .ToList();
 
                 foreach (var i in finances) {
+                    if (populateTableCts.IsCancellationRequested) return;
+
                     FinanceRecordDto item = i.ToDto();
                     
                     Dispatcher.UIThread.Invoke(() => Finances.Add(item));
                 }
-            });
+            }, populateTableCts.Token);
         }
 
         private void InitializeMenuItems(List<MenuItem> menu, ICommand command) {
@@ -95,7 +112,7 @@ namespace FinancialTracker.ViewModels {
             using (AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync()) {
                 var modified = Finances.Where(x => x.IsModified);
                 var added = Finances.Where(x => x.IsAdded);
-                var deleted = Finances.Where(x => x.IsDeleted);
+                var deleted = modified.Where(x => x.IsDeleted);
 
                 foreach (var d in deleted) {
                     var f = dbContext.Finances.Where(x => x.Id == d.Id).Single();
@@ -146,7 +163,7 @@ namespace FinancialTracker.ViewModels {
         }
 
         [RelayCommand]
-        private async Task MarkRecordDeletedAsync() {
+        private void MarkRecordDeleted() {
             commandHistory.Execute(new MarkRecordDeletedCommand(this));
         }
 
@@ -154,5 +171,7 @@ namespace FinancialTracker.ViewModels {
         private void AddDefaultRecord() {
             commandHistory.Execute(new AddDefaultFinanceRecord(Finances));
         }
+
+        
     }
 }

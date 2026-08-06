@@ -66,5 +66,6 @@ public partial class MainViewModel : ViewModelBase
         };
 
         ViewModel = newVm;
+        await ViewModel.Initialize();
     }
 }
