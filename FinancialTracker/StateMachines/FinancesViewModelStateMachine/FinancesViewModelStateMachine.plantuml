@@ -2,6 +2,7 @@
 state Idle
 state Saving {
     Saving: enter / 
+    Saving: exit / 
 }
 state Populating {
     Populating: enter / 

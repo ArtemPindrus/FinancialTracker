@@ -47,9 +47,11 @@ namespace FinancialTracker.StateMachines {
 
             CommandHistory.Clear();
 
-            DialogHost.Close(null);
-
             DispatchEventNotify(EventId.SAVESUCCESS);
+        }
+
+        void OnSavingExit() {
+            DialogHost.Close(null);
         }
 
         async void OnPopulatingEnter() {

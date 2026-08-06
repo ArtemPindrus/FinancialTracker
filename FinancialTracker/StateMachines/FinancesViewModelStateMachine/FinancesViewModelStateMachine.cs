@@ -282,6 +282,19 @@ public partial class FinancesViewModelStateMachine
 
     private void SAVING_exit()
     {
+        // Saving behavior
+        // uml: exit / { OnSavingExit(); }
+        {
+            // Step 1: execute action `OnSavingExit();`
+            OnSavingExit();
+        } // end of behavior for Saving
+
+        // Saving behavior
+        // uml: exit
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Saving
+
         this.stateId = StateId.ROOT;
     }
 
