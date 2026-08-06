@@ -49,7 +49,11 @@ namespace FinancialTracker.StateMachines {
         }
 
         async void OnOpenIdleEnter() {
-            tcpClient = await tcpListener.AcceptTcpClientAsync();
+            try {
+                tcpClient = await tcpListener.AcceptTcpClientAsync();
+            } catch {
+
+            }
 
             DispatchEventNotify(EventId.GOTCONNECTION);
         }
