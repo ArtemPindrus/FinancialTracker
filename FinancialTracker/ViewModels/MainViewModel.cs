@@ -1,7 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Services;
 using FluentAvalonia.UI.Controls;
 using System;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels;
 
@@ -13,21 +16,47 @@ public partial class MainViewModel : ViewModelBase
     public partial NavigationViewItem? SelectedNavigationItem { get; set; }
 
     [ObservableProperty]
-    public partial ViewModelBase? ViewModel { get; set; }
+    public partial MainNavigationPaneViewModel? ViewModel { get; set; }
 
     public MainViewModel(ViewModelResolver viewModelResolver) {
         this.viewModelResolver = viewModelResolver;
     }
 
     async partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
-        if (ViewModel is IDisposable ds) ds.Dispose();
+        await NavigateToSafeAsync(oldValue, newValue);
+    }
 
+    async Task NavigateToSafeAsync(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
+        if (ViewModel is not null) {
+            if (!ViewModel.CheckCanSafelyClose(out string message)) {
+                ICommand cancelCommand = new RelayCommand(() => {
+                    DialogHostAvalonia.DialogHost.Close(null);
+                });
+                ICommand continueCommand = new RelayCommand(async () => {
+                    DialogHostAvalonia.DialogHost.Close(null);
+                    await NavigateToAsync(newValue);
+                });
+
+                MainNavigationUnsafePopupViewModel mainNavigationUnsafePopupViewModel = new(message, cancelCommand, continueCommand);
+
+                _ = DialogHostAvalonia.DialogHost.Show(mainNavigationUnsafePopupViewModel);
+
+                return;
+            }
+
+            if (ViewModel is IDisposable ds) ds.Dispose();
+        }
+
+        await NavigateToAsync(newValue);
+    }
+
+    async Task NavigateToAsync(NavigationViewItem? newValue) {
         if (newValue is null) {
             ViewModel = null;
             return;
         }
 
-        ViewModelBase vm = newValue.Content switch {
+        MainNavigationPaneViewModel newVm = newValue.Content switch {
             "Finances" => viewModelResolver.ResolveViewModel<FinancesViewModel>(),
             "Raw Query" => viewModelResolver.ResolveViewModel<RawQueryViewModel>(),
             "Yearly Expenses" => viewModelResolver.ResolveViewModel<YearlyExpensesViewModel>(),
@@ -36,10 +65,6 @@ public partial class MainViewModel : ViewModelBase
             _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newValue?.Content}'")
         };
 
-        ViewModel = vm;
-
-        if (vm is FinancesViewModel fvm) {
-            await fvm.PopulateTableAsync();
-        }
+        ViewModel = newVm;
     }
 }

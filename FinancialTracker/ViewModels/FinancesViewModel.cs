@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels {
-    public partial class FinancesViewModel : ViewModelBase {
+    public partial class FinancesViewModel : MainNavigationPaneViewModel, IDisposable {
         readonly IDbContextFactory<AppDbContext> dbContextFactory;
         readonly CommandHistory commandHistory;
 
@@ -49,6 +49,15 @@ namespace FinancialTracker.ViewModels {
 
             InitializeMenuItems(AddTagsMenuItems, AddTagToSelectedRecordsCommand);
             InitializeMenuItems(RemoveTagsMenuItems, RemoveTagFromSelectedRecordsCommand);
+        }
+        public override bool CheckCanSafelyClose(out string message) {
+            if(Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded)) {
+                message = "There are unsaved changes. Are you sure you want to close?";
+                return false;
+            } else {
+                message = string.Empty;
+                return true;
+            }
         }
 
         public async Task PopulateTableAsync() {

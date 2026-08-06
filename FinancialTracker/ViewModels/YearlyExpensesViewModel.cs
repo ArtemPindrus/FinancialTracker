@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 
 namespace FinancialTracker.ViewModels {
-    public partial class YearlyExpensesViewModel : ViewModelBase {
+    public partial class YearlyExpensesViewModel : MainNavigationPaneViewModel {
         private readonly IDbContextFactory<AppDbContext> dbContextFactory;
 
         [ObservableProperty]

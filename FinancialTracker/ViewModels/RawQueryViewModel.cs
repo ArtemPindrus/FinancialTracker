@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace FinancialTracker.ViewModels {
-    public partial class RawQueryViewModel : ViewModelBase {
+    public partial class RawQueryViewModel : MainNavigationPaneViewModel {
         private readonly IDbContextFactory<AppDbContext> dbContextFactory;
 
         [ObservableProperty]

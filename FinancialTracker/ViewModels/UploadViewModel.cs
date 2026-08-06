@@ -1,15 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.StateMachines;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace FinancialTracker.ViewModels {
-    public partial class UploadViewModel : ViewModelBase, IDisposable {
+    public partial class UploadViewModel : MainNavigationPaneViewModel, IDisposable {
         private readonly SyncServer syncServer;
 
         [ObservableProperty]
