@@ -10,14 +10,13 @@ public partial class FinancesViewModelStateMachine
 {
     public enum EventId
     {
-        POPULATECANCEL = 0,
-        POPULATEREQUEST = 1,
-        POPULATESUCCESS = 2,
-        SAVEREQUEST = 3,
-        SAVESUCCESS = 4,
+        POPULATEREQUEST = 0,
+        POPULATESUCCESS = 1,
+        SAVEREQUEST = 2,
+        SAVESUCCESS = 3,
     }
 
-    public const int EventIdCount = 5;
+    public const int EventIdCount = 4;
 
     public enum StateId
     {
@@ -99,7 +98,6 @@ public partial class FinancesViewModelStateMachine
                 switch (eventId)
                 {
                     case EventId.POPULATESUCCESS: POPULATING_populatesuccess(); break;
-                    case EventId.POPULATECANCEL: POPULATING_populatecancel(); break;
                 }
                 break;
 
@@ -239,26 +237,6 @@ public partial class FinancesViewModelStateMachine
         this.stateId = StateId.ROOT;
     }
 
-    private void POPULATING_populatecancel()
-    {
-        // Populating behavior
-        // uml: PopulateCancel TransitionTo(Idle)
-        {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            POPULATING_exit();
-
-            // Step 2: Transition action: ``.
-
-            // Step 3: Enter/move towards transition target `Idle`.
-            IDLE_enter();
-
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for Populating
-
-        // No ancestor handles this event.
-    }
-
     private void POPULATING_populatesuccess()
     {
         // Populating behavior
@@ -345,7 +323,6 @@ public partial class FinancesViewModelStateMachine
     {
         switch (id)
         {
-            case EventId.POPULATECANCEL: return "POPULATECANCEL";
             case EventId.POPULATEREQUEST: return "POPULATEREQUEST";
             case EventId.POPULATESUCCESS: return "POPULATESUCCESS";
             case EventId.SAVEREQUEST: return "SAVEREQUEST";

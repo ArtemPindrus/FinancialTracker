@@ -16,6 +16,5 @@ Idle --> Populating: PopulateRequest
 Saving -> Populating: SaveSuccess
 
 Populating -> Idle: PopulateSuccess
-Populating -> Idle: PopulateCancel
 
 @enduml

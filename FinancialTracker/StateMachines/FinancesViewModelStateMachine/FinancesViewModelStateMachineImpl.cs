@@ -9,18 +9,14 @@ using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FinancialTracker.StateMachines {
-    public partial class FinancesViewModelStateMachine : BaseStateMachine<FinancesViewModelStateMachine.EventId>, IDisposable {
+    public partial class FinancesViewModelStateMachine : BaseStateMachine<FinancesViewModelStateMachine.EventId> {
         readonly FinancesViewModel vm;
         readonly IDbContextFactory<AppDbContext> dbContextFactory;
-
-        CancellationTokenSource? populateTableCts;
 
         [ObservableProperty]
         public partial List<string>? Tags { get; private set; }
@@ -28,7 +24,8 @@ namespace FinancialTracker.StateMachines {
         [ObservableProperty]
         public partial bool IsViewEnabled { get; private set; } = true;
 
-        public ObservableCollection<FinanceRecordDto> Finances { get; } = [];
+        [ObservableProperty]
+        public partial List<FinanceRecordDto>? Finances { get; set; }
 
         public CommandHistory CommandHistory { get; }
 
@@ -37,10 +34,6 @@ namespace FinancialTracker.StateMachines {
             this.vm = vm;
             this.dbContextFactory = dbContextFactory;
             CommandHistory = new();
-        }
-
-        public void Dispose() {
-            populateTableCts?.Cancel();
         }
 
         protected override void DispatchEventImpl(EventId eventId) => DispatchEvent(eventId);
@@ -62,11 +55,7 @@ namespace FinancialTracker.StateMachines {
         async void OnPopulatingEnter() {
             IsViewEnabled = false;
 
-            populateTableCts = new();
-
             using AppDbContext dbContext = dbContextFactory.CreateDbContext();
-
-            Finances.Clear();
 
             await Task.Run(() => {
                 Tags = dbContext.Tags.Select(x => x.Name).ToList();
@@ -76,17 +65,10 @@ namespace FinancialTracker.StateMachines {
                     InitializeMenuItems(vm.RemoveTagsMenuItems, vm.RemoveTagFromSelectedRecordsCommand);
                 });
 
-                var finances = dbContext.Finances
+                Finances = dbContext.Finances
                     .Include(x => x.Tags)
+                    .Select(x => x.ToDto())
                     .ToList();
-
-                foreach (var i in finances) {
-                    if (populateTableCts.IsCancellationRequested) return;
-
-                    FinanceRecordDto item = i.ToDto();
-
-                    Dispatcher.UIThread.Invoke(() => Finances.Add(item));
-                }
             });
 
             DispatchEventNotify(EventId.POPULATESUCCESS);
@@ -94,7 +76,6 @@ namespace FinancialTracker.StateMachines {
 
         void OnPopulatingExit() {
             IsViewEnabled = true;
-            populateTableCts?.Cancel();
         }
 
         private void InitializeMenuItems(IList<MenuItem> menu, ICommand command) {

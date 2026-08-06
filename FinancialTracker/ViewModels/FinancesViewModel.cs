@@ -21,8 +21,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels {
-    public partial class FinancesViewModel : MainNavigationPaneViewModel, IDisposable {
-        readonly IDbContextFactory<AppDbContext> dbContextFactory;
+    public partial class FinancesViewModel : MainNavigationPaneViewModel {
         readonly FinancesViewModelStateMachine stateMachine;
 
         public bool IsViewEnabled => stateMachine.IsViewEnabled;
@@ -32,7 +31,7 @@ namespace FinancialTracker.ViewModels {
         public ICommand UndoCommand => CommandHistory.UndoCommand;
         public ICommand RedoCommand => CommandHistory.RedoCommand;
 
-        public ObservableCollection<FinanceRecordDto> Finances => stateMachine.Finances;
+        public List<FinanceRecordDto>? Finances => stateMachine.Finances;
 
         public IEnumerable<FinanceRecordDto>? SelectedFinances => SelectedFinancesBind?.Cast<FinanceRecordDto>();
 
@@ -49,7 +48,6 @@ namespace FinancialTracker.ViewModels {
         private CommandHistory CommandHistory => stateMachine.CommandHistory;
 
         public FinancesViewModel(IDbContextFactory<AppDbContext> dbContextFactory) {
-            this.dbContextFactory = dbContextFactory;
             stateMachine = new(this, dbContextFactory);
 
             stateMachine.PropertyChanged += StateMachine_PropertyChanged;
@@ -60,20 +58,14 @@ namespace FinancialTracker.ViewModels {
             OnPropertyChanged(e);
         }
 
-        public void Dispose() {
-            stateMachine.Dispose();
-        }
-
         public override bool CheckCanSafelyClose(out string message) {
-            stateMachine.DispatchEventNotify(FinancesViewModelStateMachine.EventId.POPULATECANCEL);
+            message = string.Empty;
+            if (Finances is null) return true;
 
             if (Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded)) {
                 message = "There are unsaved changes. Are you sure you want to close?";
                 return false;
-            } else {
-                message = string.Empty;
-                return true;
-            }
+            } else return true;
         }
 
         public override async Task Initialize() {
