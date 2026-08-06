@@ -29,10 +29,10 @@ state Open {
 
     OpenIdle -> ConnectionRequested: GotConnection
 
-    ConnectionRequested -> Connected: ConnectionAccepted
-    ConnectionRequested -> OpenIdle: ConnectionRejected / OnConnectionRejected();
+    ConnectionRequested --> Connected: ConnectionAccepted
+    ConnectionRequested -left-> OpenIdle: ConnectionRejected / OnConnectionRejected();
 
-    Connected -left-> OpenIdle: Disconnected
+    Connected -up-> OpenIdle: Disconnected
 }
 
 
