@@ -97,6 +97,8 @@ namespace FinancialTracker.ViewModels {
         }
 
         private void InitializeMenuItems(IList<MenuItem> menu, ICommand command) {
+            if (Tags is null) return;
+
             menu.Clear();
 
             foreach (var t in Tags) {
