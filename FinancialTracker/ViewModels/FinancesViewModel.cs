@@ -70,7 +70,7 @@ namespace FinancialTracker.ViewModels {
         }
 
         public async Task PopulateTableAsync() {
-            await using AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync(populateTableCts.Token);
+            using AppDbContext dbContext = dbContextFactory.CreateDbContext();
 
             Finances.Clear();
 
@@ -93,7 +93,7 @@ namespace FinancialTracker.ViewModels {
                     
                     Dispatcher.UIThread.Invoke(() => Finances.Add(item));
                 }
-            }, populateTableCts.Token);
+            });
         }
 
         private void InitializeMenuItems(IList<MenuItem> menu, ICommand command) {
@@ -114,7 +114,7 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private async Task SaveChangesAsync() {
-            using (AppDbContext dbContext = await dbContextFactory.CreateDbContextAsync()) {
+            using (AppDbContext dbContext = dbContextFactory.CreateDbContext()) {
                 var modified = Finances.Where(x => x.IsModified);
                 var added = Finances.Where(x => x.IsAdded);
                 var deleted = Finances.Where(x => x.IsDeleted);
@@ -130,19 +130,19 @@ namespace FinancialTracker.ViewModels {
                         .Include(x => x.Tags)
                         .Single();
 
-                    await dbContext.AddMissingTagsToDatabaseAsync(m);
+                    dbContext.AddMissingTagsToDatabase(m);
 
                     DbHelper.SyncDtoToEntity(m, f, dbContext);
                 }
 
                 foreach (FinanceRecordDto a in added) {
-                    await dbContext.AddMissingTagsToDatabaseAsync(a);
+                    dbContext.AddMissingTagsToDatabase(a);
 
                     Finance f = a.ToEntity(dbContext);
                     dbContext.Finances.Add(f);
                 }
 
-                await dbContext.SaveChangesAsync();
+                dbContext.SaveChanges();
             }
             
             await PopulateTableAsync();
