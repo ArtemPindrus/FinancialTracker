@@ -1,10 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Services;
 using FluentAvalonia.UI.Controls;
 using System;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace FinancialTracker.ViewModels;
 
@@ -41,18 +39,10 @@ public partial class MainViewModel : ViewModelBase
 
         if (ViewModel is not null) {
             if (!ViewModel.CheckCanSafelyClose(out string message)) {
-                ICommand cancelCommand = new RelayCommand(() => {
-                    DialogHostAvalonia.DialogHost.Close(null);
-                    SelectedNavigationItem = oldValue;
-                });
-                ICommand continueCommand = new RelayCommand(async () => {
-                    DialogHostAvalonia.DialogHost.Close(null);
-                    await NavigateToAsync(newNavigationString);
-                });
-
-                MainNavigationUnsafePopupViewModel mainNavigationUnsafePopupViewModel = new(message, cancelCommand, continueCommand);
-
-                _ = DialogHostAvalonia.DialogHost.Show(mainNavigationUnsafePopupViewModel);
+                _ = MainNavigationUnsafePopupViewModel.ShowInPopup(message,
+                    DialogHostHelper.MainDialogIdentifier,
+                    cancelAction: () => SelectedNavigationItem = oldValue,
+                    continueAction: async () => await NavigateToAsync(newNavigationString));
 
                 return;
             }
