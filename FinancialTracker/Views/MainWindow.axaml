@@ -12,8 +12,6 @@
     Icon="/Assets/avalonia-logo.ico"
     WindowState="Maximized"
     mc:Ignorable="d">
+    <views:MainView />
 
-    <dialogHost:DialogHost Identifier="MainDialogHost">
-        <views:MainView />
-    </dialogHost:DialogHost>
 </Window>

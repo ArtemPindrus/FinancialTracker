@@ -20,34 +20,36 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <ui:NavigationView
-        IsSettingsVisible="False"
-        OpenPaneLength="200"
-        PaneDisplayMode="Left"
-        SelectedItem="{Binding SelectedNavigationItem}">
-        <ui:NavigationView.MenuItems>
-            <ui:NavigationViewItem Content="Finances" />
-            <ui:NavigationViewItem Content="Raw Query" />
-            <ui:NavigationViewItem Content="Charts" SelectsOnInvoked="False">
-                <ui:NavigationViewItem.MenuItems>
-                    <ui:NavigationViewItem Content="Yearly Expenses" />
-                </ui:NavigationViewItem.MenuItems>
-            </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content="Sync" SelectsOnInvoked="False">
-                <ui:NavigationViewItem.MenuItems>
-                    <ui:NavigationViewItem Content="Upload" />
-                    <ui:NavigationViewItem Content="Download" />
-                </ui:NavigationViewItem.MenuItems>
-            </ui:NavigationViewItem>
-        </ui:NavigationView.MenuItems>
+    <dialogHost:DialogHost Identifier="MainDialogHost">
+        <ui:NavigationView
+            IsSettingsVisible="False"
+            OpenPaneLength="200"
+            PaneDisplayMode="Left"
+            SelectedItem="{Binding SelectedNavigationItem}">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="Finances" />
+                <ui:NavigationViewItem Content="Raw Query" />
+                <ui:NavigationViewItem Content="Charts" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Yearly Expenses" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Sync" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Upload" />
+                        <ui:NavigationViewItem Content="Download" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
 
-        <dialogHost:DialogHost Identifier="ContentDialogHost">
-            <Grid RowDefinitions="*, Auto">
-                <ContentControl Content="{Binding ViewModel}" />
+            <dialogHost:DialogHost Identifier="ContentDialogHost">
+                <Grid RowDefinitions="*, Auto">
+                    <ContentControl Content="{Binding ViewModel}" />
 
-                <ContentControl Grid.Row="1" Content="{Binding InfoBar}" />
-            </Grid>
-        </dialogHost:DialogHost>
-    </ui:NavigationView>
+                    <ContentControl Grid.Row="1" Content="{Binding InfoBar}" />
+                </Grid>
+            </dialogHost:DialogHost>
+        </ui:NavigationView>
+    </dialogHost:DialogHost>
 
 </UserControl>
