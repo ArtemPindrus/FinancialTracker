@@ -11,9 +11,11 @@ namespace FinancialTracket.DataAccessLayer {
                 string connectionString = $"Data Source={databasePath};Pooling=False";
 
                 options.UseSqlite(connectionString);
+#if DEBUG
                 options.UseSeeding((db, _) => {
                     SeedDatabase((AppDbContext)db);
                 });
+#endif
             });
 
             return services;
@@ -59,7 +61,7 @@ namespace FinancialTracket.DataAccessLayer {
             var today = DateOnly.FromDateTime(DateTime.Now);
 
             // Generate 200+ financial records
-            for (int i = 0; i < 200; i++) {
+            for (int i = 0; i < 10000; i++) {
                 var daysAgo = random.Next(0, 365); // Last year of data
                 var transactionDate = today.AddDays(-daysAgo);
 
