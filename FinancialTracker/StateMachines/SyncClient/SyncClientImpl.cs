@@ -112,7 +112,7 @@ namespace FinancialTracker.StateMachines {
 
                     try {
                         int read = await stream.ReadAsync(buffer, 0, (int)Math.Min(buffer.Length, remaining), receivingCts.Token);
-                        if (read == 0) break;
+                        if (read == 0) throw new IOException("Incomplete transfer.");
 
                         await tempFileStream.WriteAsync(buffer, 0, read, receivingCts.Token);
                         remaining -= read;
@@ -122,7 +122,7 @@ namespace FinancialTracker.StateMachines {
                         DispatchEventNotify(EventId.DISCONNECTED);
 
                         return;
-                    } catch {
+                    } catch(Exception e) {
                         notifier.Error("Receiving failed.");
 
                         DispatchEventNotify(EventId.DISCONNECTED);
@@ -132,8 +132,7 @@ namespace FinancialTracker.StateMachines {
                 }
             }
 
-            File.Delete(databasePath);
-            File.Move(tempFile, databasePath);
+            File.Move(tempFile, databasePath, overwrite: true);
 
             notifier.Info("Database received. Disconnecting.");
             DispatchEventNotify(EventId.DISCONNECTED);
