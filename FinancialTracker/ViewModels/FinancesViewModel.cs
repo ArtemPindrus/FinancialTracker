@@ -1,22 +1,16 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DialogHostAvalonia;
 using FinancialTracker.Commands;
 using FinancialTracker.Models;
 using FinancialTracker.StateMachines;
 using FinancialTracket.DataAccessLayer;
-using FinancialTracket.DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -30,6 +24,8 @@ namespace FinancialTracker.ViewModels {
         public ICommand RedoCommand => CommandHistory.RedoCommand;
 
         public List<FinanceRecordDto> Finances => stateMachine.Finances;
+
+        public bool HasModifications => Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded);
 
         public IEnumerable<FinanceRecordDto>? SelectedFinances => SelectedFinancesBind?.Cast<FinanceRecordDto>();
 
@@ -58,9 +54,8 @@ namespace FinancialTracker.ViewModels {
 
         public override bool CheckCanSafelyClose(out string message) {
             message = string.Empty;
-            if (Finances is null) return true;
 
-            if (Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded)) {
+            if (HasModifications) {
                 message = "There are unsaved changes. Are you sure you want to close?";
                 return false;
             } else return true;
@@ -77,7 +72,18 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private void Rollback() {
-            stateMachine.DispatchEventNotify(FinancesViewModelStateMachine.EventId.POPULATEREQUEST);
+            void Proceed() => stateMachine.DispatchEventNotify(FinancesViewModelStateMachine.EventId.POPULATEREQUEST);
+
+            if (HasModifications) {
+                MainNavigationUnsafePopupViewModel.ShowInPopup("Unsaved changes are detected!",
+                    DialogHostHelper.MainDialogIdentifier,
+                    cancelAction: () => { },
+                    continueAction: Proceed);
+
+                return;
+            }
+
+            Proceed();
         }
 
         [RelayCommand]
