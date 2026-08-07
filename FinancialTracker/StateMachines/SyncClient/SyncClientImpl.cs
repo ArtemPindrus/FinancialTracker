@@ -99,37 +99,41 @@ namespace FinancialTracker.StateMachines {
             receivingCts = new();
             var stream = tcpClient.GetStream();
 
-            // TODO: write to a temporary file and then replace the original file to avoid data loss in case of an error
-            using var fileStream = File.Create(databasePath);
-            byte[] buffer = new byte[81920];
-            long remaining = fileSize;
+            string tempFile = databasePath + "_TEMP";
+            using (var tempFileStream = File.Create(tempFile)) {
+                byte[] buffer = new byte[81920];
+                long remaining = fileSize;
 
-            while (remaining > 0) {
-                long sent = fileSize - remaining;
-                ReceivingProgress = (float)sent / fileSize;
+                while (remaining > 0) {
+                    long sent = fileSize - remaining;
+                    ReceivingProgress = (float)sent / fileSize;
 
-                try {
-                    int read = await stream.ReadAsync(buffer, 0, (int)Math.Min(buffer.Length, remaining), receivingCts.Token);
-                    if (read == 0) break;
+                    try {
+                        int read = await stream.ReadAsync(buffer, 0, (int)Math.Min(buffer.Length, remaining), receivingCts.Token);
+                        if (read == 0) break;
 
-                    await fileStream.WriteAsync(buffer, 0, read, receivingCts.Token);
-                    remaining -= read;
-                } catch (OperationCanceledException) {
-                    notifier.Info("Receiving canceled.");
+                        await tempFileStream.WriteAsync(buffer, 0, read, receivingCts.Token);
+                        remaining -= read;
+                    } catch (OperationCanceledException) {
+                        notifier.Info("Receiving canceled.");
 
-                    DispatchEventNotify(EventId.DISCONNECTED);
+                        DispatchEventNotify(EventId.DISCONNECTED);
 
-                    return;
-                } catch {
-                    notifier.Error("Receiving failed.");
+                        return;
+                    } catch {
+                        notifier.Error("Receiving failed.");
 
-                    DispatchEventNotify(EventId.DISCONNECTED);
+                        DispatchEventNotify(EventId.DISCONNECTED);
 
-                    return;
+                        return;
+                    }
                 }
             }
 
-            notifier.Info("Database sent. Disconnecting.");
+            File.Delete(databasePath);
+            File.Move(tempFile, databasePath);
+
+            notifier.Info("Database received. Disconnecting.");
             DispatchEventNotify(EventId.DISCONNECTED);
         }
 
