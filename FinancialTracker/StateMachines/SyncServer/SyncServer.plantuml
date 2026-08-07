@@ -10,7 +10,7 @@ state Open {
     }
     state ConnectionRequested
     state Connected {
-        Connected: exit /
+        Connected: exit / 
 
         state ConnectedIdle
         state Sending {

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.StateMachines;
-using FinancialTracker.Views;
 using System;
 using System.ComponentModel;
 using System.Net.NetworkInformation;
@@ -12,7 +11,7 @@ namespace FinancialTracker.ViewModels {
         private readonly SyncServer syncServer;
 
         [ObservableProperty]
-        object? currentViewModel;
+        public partial object? CurrentViewModel { get; private set; }
 
         public string ClientIp => syncServer.ClientIp ?? "Not connected";
 

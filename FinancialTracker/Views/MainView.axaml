@@ -42,8 +42,10 @@
         </ui:NavigationView.MenuItems>
 
         <dialogHost:DialogHost Identifier="ContentDialogHost">
-            <Grid RowDefinitions="50, *">
-                <ContentControl Grid.Row="1" Content="{Binding ViewModel}" />
+            <Grid RowDefinitions="*, Auto">
+                <ContentControl Content="{Binding ViewModel}" />
+
+                <ContentControl Grid.Row="1" Content="{Binding InfoBar}" />
             </Grid>
         </dialogHost:DialogHost>
     </ui:NavigationView>

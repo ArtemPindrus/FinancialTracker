@@ -1,4 +1,6 @@
 ﻿using FinancialTracker.DataAccessLayer.Services;
+using FinancialTracker.Services;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net;
@@ -10,6 +12,7 @@ namespace FinancialTracker.StateMachines {
     public partial class SyncServer : BaseStateMachine<SyncServer.EventId>, IDisposable {
         public const int Port = 8080;
         private readonly string databasePath;
+        private readonly IErrorNotifier notifier;
 
         TcpListener tcpListener;
         TcpClient? tcpClient;
@@ -18,10 +21,11 @@ namespace FinancialTracker.StateMachines {
 
         public string? ClientIp => tcpClient?.Client?.RemoteEndPoint?.ToString();
 
-        public SyncServer(IDatabasePathProvider databasePathProvider) {
+        public SyncServer(IDatabasePathProvider databasePathProvider, IErrorNotifier notifier) {
             databasePath = databasePathProvider.GetDatabasePath();
 
             tcpListener = new(IPAddress.Any, Port);
+            this.notifier = notifier;
         }
 
         protected override void DispatchEventImpl(EventId eventId) => DispatchEvent(eventId);
@@ -84,10 +88,12 @@ namespace FinancialTracker.StateMachines {
                 using var fileStream = File.OpenRead(databasePath);
                 await fileStream.CopyToAsync(stream, sendCts.Token);
             } catch {
-                // noop
-            } finally {
+                notifier.Error("Failed to send database.");
                 DispatchEventNotify(EventId.DISCONNECTED);
             }
+
+            notifier.Info("Sent database. Disconnecting.");
+            DispatchEventNotify(EventId.DISCONNECTED);
         }
 
         void OnSendingExit() {

@@ -20,8 +20,15 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial MainNavigationPaneViewModel? ViewModel { get; set; }
 
+    public InfoBar InfoBar { get; }
+
     public MainViewModel(ViewModelResolver viewModelResolver) {
         this.viewModelResolver = viewModelResolver;
+
+        InfoBar = new() {
+            IsClosable = true,
+            IsOpen = false,
+        };
     }
 
     async partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
