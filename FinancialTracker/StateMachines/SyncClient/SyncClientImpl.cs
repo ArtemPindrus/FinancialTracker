@@ -100,6 +100,8 @@ namespace FinancialTracker.StateMachines {
             var stream = tcpClient.GetStream();
 
             string tempFile = databasePath + "_TEMP";
+            File.Delete(tempFile);
+
             using (var tempFileStream = File.Create(tempFile)) {
                 byte[] buffer = new byte[81920];
                 long remaining = fileSize;
