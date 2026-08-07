@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using FinancialTracker.DataAccessLayer.Services;
 using FinancialTracker.Services;
-using SkiaSharp;
 using System;
 using System.IO;
 using System.Net;
@@ -74,17 +73,17 @@ namespace FinancialTracker.StateMachines {
             var stream = tcpClient.GetStream();
             var reader = new BinaryReader(stream);
 
-            await Task.Run(() => {
-                try {
+            try {
+                await Task.Run(() => {
                     fileSize = reader.ReadInt64();
-                } catch {
-                    notifier.Error("Failed to start receiving database. Server might have rejected connection.");
+                });
+            } catch {
+                notifier.Error("Failed to start receiving database. Server might have rejected connection.");
 
-                    DispatchEventNotify(EventId.DISCONNECTED);
+                DispatchEventNotify(EventId.DISCONNECTED);
 
-                    return;
-                }
-            });
+                return;
+            }
 
             DispatchEventNotify(EventId.RECEIVE);
         }
