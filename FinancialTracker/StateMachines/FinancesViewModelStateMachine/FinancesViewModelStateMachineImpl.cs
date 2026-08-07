@@ -20,7 +20,7 @@ namespace FinancialTracker.StateMachines {
         public partial List<string>? Tags { get; private set; }
 
         [ObservableProperty]
-        public partial List<FinanceRecordDto>? Finances { get; set; }
+        public partial List<FinanceRecordDto> Finances { get; set; } = [];
 
         public CommandHistory CommandHistory { get; }
 

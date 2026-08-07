@@ -29,7 +29,7 @@ namespace FinancialTracker.ViewModels {
         public ICommand UndoCommand => CommandHistory.UndoCommand;
         public ICommand RedoCommand => CommandHistory.RedoCommand;
 
-        public List<FinanceRecordDto>? Finances => stateMachine.Finances;
+        public List<FinanceRecordDto> Finances => stateMachine.Finances;
 
         public IEnumerable<FinanceRecordDto>? SelectedFinances => SelectedFinancesBind?.Cast<FinanceRecordDto>();
 
