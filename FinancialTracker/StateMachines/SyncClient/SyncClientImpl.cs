@@ -20,6 +20,9 @@ namespace FinancialTracker.StateMachines {
         private TcpClient? tcpClient;
         private long fileSize = -1;
 
+        [ObservableProperty]
+        public partial float ReceivingProgress { get; private set; }
+
         public IPAddress? RequestedIpAddress { get; private set; }
         public IPAddress? ConnectedIpAddress => (tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 
@@ -103,6 +106,9 @@ namespace FinancialTracker.StateMachines {
             long remaining = fileSize;
 
             while (remaining > 0) {
+                long sent = fileSize - remaining;
+                ReceivingProgress = (float)sent / fileSize;
+
                 try {
                     int read = await stream.ReadAsync(buffer, 0, (int)Math.Min(buffer.Length, remaining), receivingCts.Token);
                     if (read == 0) break;

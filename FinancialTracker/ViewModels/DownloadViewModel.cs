@@ -36,6 +36,7 @@ namespace FinancialTracker.ViewModels {
                 SyncClient.StateId.IDLE => new DownloadIdleViewModel(Connect),
                 SyncClient.StateId.CONNECTING => new DownloadConnectingViewModel(syncClient.RequestedIpAddress, CancelConnectionCommand),
                 SyncClient.StateId.CONNECTED => new DownloadConnectedViewModel(syncClient.ConnectedIpAddress, DisconnectCommand),
+                SyncClient.StateId.RECEIVING => new DownloadReceivingViewModel(syncClient),
                 _ => "UNKNOWN STATE"
             };
         }
