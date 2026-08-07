@@ -12,10 +12,10 @@ public partial class SyncClient
     {
         CONNECTIONCANCELED = 0,
         CONNECTIONFAILED = 1,
-        CONNECTIONSUCCEEDED = 2,
+        CONNECTIONSUCCESS = 2,
         CONNECTREQUEST = 3,
-        RECEIVINGCOMPLETED = 4,
-        RECEIVINGFAILED = 5,
+        DISCONNECTED = 4,
+        RECEIVE = 5,
     }
 
     public const int EventIdCount = 6;
@@ -23,19 +23,21 @@ public partial class SyncClient
     public enum StateId
     {
         ROOT = 0,
-        CONNECTING = 1,
-        IDLE = 2,
-        RECEIVING = 3,
+        CONNECTED = 1,
+        RECEIVING = 2,
+        CONNECTING = 3,
+        IDLE = 4,
     }
 
-    public const int StateIdCount = 4;
+    public const int StateIdCount = 5;
 
     // Subtree meta data generation can be disabled in settings.
     // Details: https://github.com/StateSmith/StateSmith/issues/538
-    public const int ROOT_SubtreeEndId = 3;  // State 'SyncClient' subtree extends from itself (id: 0) to state 'Receiving' (id: 3)
-    public const int CONNECTING_SubtreeEndId = 1;  // State 'Connecting' subtree extends from itself (id: 1) to state 'Connecting' (id: 1)
-    public const int IDLE_SubtreeEndId = 2;  // State 'Idle' subtree extends from itself (id: 2) to state 'Idle' (id: 2)
-    public const int RECEIVING_SubtreeEndId = 3;  // State 'Receiving' subtree extends from itself (id: 3) to state 'Receiving' (id: 3)
+    public const int ROOT_SubtreeEndId = 4;  // State 'SyncClient' subtree extends from itself (id: 0) to state 'Idle' (id: 4)
+    public const int CONNECTED_SubtreeEndId = 2;  // State 'Connected' subtree extends from itself (id: 1) to state 'Receiving' (id: 2)
+    public const int RECEIVING_SubtreeEndId = 2;  // State 'Receiving' subtree extends from itself (id: 2) to state 'Receiving' (id: 2)
+    public const int CONNECTING_SubtreeEndId = 3;  // State 'Connecting' subtree extends from itself (id: 3) to state 'Connecting' (id: 3)
+    public const int IDLE_SubtreeEndId = 4;  // State 'Idle' subtree extends from itself (id: 4) to state 'Idle' (id: 4)
 
     // Used internally by state machine. Feel free to inspect, but don't modify.
     public StateId stateId;
@@ -86,11 +88,29 @@ public partial class SyncClient
                 // No events handled by this state (or its ancestors).
                 break;
 
+            // STATE: Connected
+            case StateId.CONNECTED:
+                switch (eventId)
+                {
+                    case EventId.RECEIVE: CONNECTED_receive(); break;
+                    case EventId.DISCONNECTED: CONNECTED_disconnected(); break;
+                }
+                break;
+
+            // STATE: Receiving
+            case StateId.RECEIVING:
+                switch (eventId)
+                {
+                    case EventId.RECEIVE: CONNECTED_receive(); break; // First ancestor handler for this event
+                    case EventId.DISCONNECTED: CONNECTED_disconnected(); break; // First ancestor handler for this event
+                }
+                break;
+
             // STATE: Connecting
             case StateId.CONNECTING:
                 switch (eventId)
                 {
-                    case EventId.CONNECTIONSUCCEEDED: CONNECTING_connectionsucceeded(); break;
+                    case EventId.CONNECTIONSUCCESS: CONNECTING_connectionsuccess(); break;
                     case EventId.CONNECTIONFAILED: CONNECTING_connectionfailed(); break;
                     case EventId.CONNECTIONCANCELED: CONNECTING_connectioncanceled(); break;
                 }
@@ -101,15 +121,6 @@ public partial class SyncClient
                 switch (eventId)
                 {
                     case EventId.CONNECTREQUEST: IDLE_connectrequest(); break;
-                }
-                break;
-
-            // STATE: Receiving
-            case StateId.RECEIVING:
-                switch (eventId)
-                {
-                    case EventId.RECEIVINGCOMPLETED: RECEIVING_receivingcompleted(); break;
-                    case EventId.RECEIVINGFAILED: RECEIVING_receivingfailed(); break;
                 }
                 break;
         }
@@ -124,11 +135,13 @@ public partial class SyncClient
         {
             switch (this.stateId)
             {
+                case StateId.CONNECTED: CONNECTED_exit(); break;
+
+                case StateId.RECEIVING: RECEIVING_exit(); break;
+
                 case StateId.CONNECTING: CONNECTING_exit(); break;
 
                 case StateId.IDLE: IDLE_exit(); break;
-
-                case StateId.RECEIVING: RECEIVING_exit(); break;
 
                 default: return;  // Just to be safe. Prevents infinite loop if state ID memory is somehow corrupted.
             }
@@ -143,6 +156,128 @@ public partial class SyncClient
     private void ROOT_enter()
     {
         this.stateId = StateId.ROOT;
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state CONNECTED
+    ////////////////////////////////////////////////////////////////////////////////
+
+    private void CONNECTED_enter()
+    {
+        this.stateId = StateId.CONNECTED;
+
+        // Connected behavior
+        // uml: enter / { OnConnectedEnter(); }
+        {
+            // Step 1: execute action `OnConnectedEnter();`
+            OnConnectedEnter();
+        } // end of behavior for Connected
+
+        // Connected behavior
+        // uml: enter
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Connected
+    }
+
+    private void CONNECTED_exit()
+    {
+        // Connected behavior
+        // uml: exit / { OnConnectedExit(); }
+        {
+            // Step 1: execute action `OnConnectedExit();`
+            OnConnectedExit();
+        } // end of behavior for Connected
+
+        // Connected behavior
+        // uml: exit
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Connected
+
+        this.stateId = StateId.ROOT;
+    }
+
+    private void CONNECTED_disconnected()
+    {
+        // Connected behavior
+        // uml: Disconnected TransitionTo(Idle)
+        {
+            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
+            ExitUpToStateHandler(StateId.ROOT);
+
+            // Step 2: Transition action: ``.
+
+            // Step 3: Enter/move towards transition target `Idle`.
+            IDLE_enter();
+
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for Connected
+
+        // No ancestor handles this event.
+    }
+
+    private void CONNECTED_receive()
+    {
+        // Connected behavior
+        // uml: Receive TransitionTo(Receiving)
+        {
+            // Step 1: Exit states until we reach `Connected` state (Least Common Ancestor for transition).
+            ExitUpToStateHandler(StateId.CONNECTED);
+
+            // Step 2: Transition action: ``.
+
+            // Step 3: Enter/move towards transition target `Receiving`.
+            RECEIVING_enter();
+
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for Connected
+
+        // No ancestor handles this event.
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state RECEIVING
+    ////////////////////////////////////////////////////////////////////////////////
+
+    private void RECEIVING_enter()
+    {
+        this.stateId = StateId.RECEIVING;
+
+        // Receiving behavior
+        // uml: enter / { OnReceivingEnter(); }
+        {
+            // Step 1: execute action `OnReceivingEnter();`
+            OnReceivingEnter();
+        } // end of behavior for Receiving
+
+        // Receiving behavior
+        // uml: enter
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Receiving
+    }
+
+    private void RECEIVING_exit()
+    {
+        // Receiving behavior
+        // uml: exit / { OnReceivingExit(); }
+        {
+            // Step 1: execute action `OnReceivingExit();`
+            OnReceivingExit();
+        } // end of behavior for Receiving
+
+        // Receiving behavior
+        // uml: exit
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Receiving
+
+        this.stateId = StateId.CONNECTED;
     }
 
 
@@ -170,6 +305,19 @@ public partial class SyncClient
 
     private void CONNECTING_exit()
     {
+        // Connecting behavior
+        // uml: exit / { OnConnectingExit(); }
+        {
+            // Step 1: execute action `OnConnectingExit();`
+            OnConnectingExit();
+        } // end of behavior for Connecting
+
+        // Connecting behavior
+        // uml: exit
+        {
+            // Step 1: execute action ``
+        } // end of behavior for Connecting
+
         this.stateId = StateId.ROOT;
     }
 
@@ -213,18 +361,18 @@ public partial class SyncClient
         // No ancestor handles this event.
     }
 
-    private void CONNECTING_connectionsucceeded()
+    private void CONNECTING_connectionsuccess()
     {
         // Connecting behavior
-        // uml: ConnectionSucceeded TransitionTo(Receiving)
+        // uml: ConnectionSuccess TransitionTo(Connected)
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             CONNECTING_exit();
 
             // Step 2: Transition action: ``.
 
-            // Step 3: Enter/move towards transition target `Receiving`.
-            RECEIVING_enter();
+            // Step 3: Enter/move towards transition target `Connected`.
+            CONNECTED_enter();
 
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
@@ -268,96 +416,16 @@ public partial class SyncClient
         // No ancestor handles this event.
     }
 
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // event handlers for state RECEIVING
-    ////////////////////////////////////////////////////////////////////////////////
-
-    private void RECEIVING_enter()
-    {
-        this.stateId = StateId.RECEIVING;
-
-        // Receiving behavior
-        // uml: enter / { OnReceivingEnter(); }
-        {
-            // Step 1: execute action `OnReceivingEnter();`
-            OnReceivingEnter();
-        } // end of behavior for Receiving
-
-        // Receiving behavior
-        // uml: enter
-        {
-            // Step 1: execute action ``
-        } // end of behavior for Receiving
-    }
-
-    private void RECEIVING_exit()
-    {
-        // Receiving behavior
-        // uml: exit / { OnReceivingExit(); }
-        {
-            // Step 1: execute action `OnReceivingExit();`
-            OnReceivingExit();
-        } // end of behavior for Receiving
-
-        // Receiving behavior
-        // uml: exit
-        {
-            // Step 1: execute action ``
-        } // end of behavior for Receiving
-
-        this.stateId = StateId.ROOT;
-    }
-
-    private void RECEIVING_receivingcompleted()
-    {
-        // Receiving behavior
-        // uml: ReceivingCompleted TransitionTo(Idle)
-        {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            RECEIVING_exit();
-
-            // Step 2: Transition action: ``.
-
-            // Step 3: Enter/move towards transition target `Idle`.
-            IDLE_enter();
-
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for Receiving
-
-        // No ancestor handles this event.
-    }
-
-    private void RECEIVING_receivingfailed()
-    {
-        // Receiving behavior
-        // uml: ReceivingFailed TransitionTo(Idle)
-        {
-            // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-            RECEIVING_exit();
-
-            // Step 2: Transition action: ``.
-
-            // Step 3: Enter/move towards transition target `Idle`.
-            IDLE_enter();
-
-            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-            return;
-        } // end of behavior for Receiving
-
-        // No ancestor handles this event.
-    }
-
     // Thread safe. This function can be disabled with `outputStateIdToStringFunction` setting.
     public static string StateIdToString(StateId id)
     {
         switch (id)
         {
             case StateId.ROOT: return "ROOT";
+            case StateId.CONNECTED: return "CONNECTED";
+            case StateId.RECEIVING: return "RECEIVING";
             case StateId.CONNECTING: return "CONNECTING";
             case StateId.IDLE: return "IDLE";
-            case StateId.RECEIVING: return "RECEIVING";
             default: return "?";
         }
     }
@@ -369,10 +437,10 @@ public partial class SyncClient
         {
             case EventId.CONNECTIONCANCELED: return "CONNECTIONCANCELED";
             case EventId.CONNECTIONFAILED: return "CONNECTIONFAILED";
-            case EventId.CONNECTIONSUCCEEDED: return "CONNECTIONSUCCEEDED";
+            case EventId.CONNECTIONSUCCESS: return "CONNECTIONSUCCESS";
             case EventId.CONNECTREQUEST: return "CONNECTREQUEST";
-            case EventId.RECEIVINGCOMPLETED: return "RECEIVINGCOMPLETED";
-            case EventId.RECEIVINGFAILED: return "RECEIVINGFAILED";
+            case EventId.DISCONNECTED: return "DISCONNECTED";
+            case EventId.RECEIVE: return "RECEIVE";
             default: return "?";
         }
     }
@@ -384,9 +452,10 @@ public partial class SyncClient
         switch (id)
         {
             case StateId.ROOT: return StateId.ROOT;
+            case StateId.CONNECTED: return StateId.ROOT;
+            case StateId.RECEIVING: return StateId.CONNECTED;
             case StateId.CONNECTING: return StateId.ROOT;
             case StateId.IDLE: return StateId.ROOT;
-            case StateId.RECEIVING: return StateId.ROOT;
             default: return StateId.ROOT;
         }
     }

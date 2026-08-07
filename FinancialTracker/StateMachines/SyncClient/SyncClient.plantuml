@@ -3,21 +3,28 @@
 state Idle
 state Connecting {
     Connecting: enter / 
+    Connecting: exit / 
 }
-state Receiving {
-    Receiving: enter / 
-    Receiving: exit /
+state Connected {
+    Connected: enter / 
+    Connected: exit / 
+
+    state Receiving {
+        Receiving: enter / 
+        Receiving: exit / 
+    }
+
+    Connected --> Receiving: Receive
 }
 
-[*] -> Idle
+[*] --> Idle
 
 Idle -> Connecting: ConnectRequest
 
-Connecting --> Receiving: ConnectionSucceeded
-Connecting -> Idle: ConnectionFailed
-Connecting -> Idle: ConnectionCanceled
+Connecting --> Connected: ConnectionSuccess
+Connecting -left-> Idle: ConnectionFailed 
+Connecting -left-> Idle: ConnectionCanceled
 
-Receiving -> Idle: ReceivingCompleted
-Receiving -> Idle: ReceivingFailed
+Connected -up-> Idle: Disconnected
 
 @enduml

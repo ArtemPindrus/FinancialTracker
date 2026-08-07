@@ -1,13 +1,16 @@
 <UserControl
-    x:Class="FinancialTracker.Views.DownloadView"
+    x:Class="FinancialTracker.Views.DownloadIdleView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:FinancialTracker.ViewModels"
+    xmlns:vm="using:FinancialTracker.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="viewmodels:DownloadViewModel"
+    x:DataType="vm:DownloadIdleViewModel"
     mc:Ignorable="d">
-    <ContentControl HorizontalAlignment="Center" Content="{Binding CurrentViewModel}" />
+    <StackPanel>
+        <TextBox Text="{Binding IpAddress}" Watermark="Server IP" />
+        <Button Command="{Binding ConnectCommand}" Content="Connect" />
+    </StackPanel>
 </UserControl>
