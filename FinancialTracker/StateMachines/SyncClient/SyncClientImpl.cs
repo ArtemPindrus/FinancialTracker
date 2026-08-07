@@ -102,40 +102,33 @@ namespace FinancialTracker.StateMachines {
             string tempFile = databasePath + "_TEMP";
             File.Delete(tempFile);
 
-            using (var tempFileStream = File.Create(tempFile)) {
-                byte[] buffer = new byte[81920];
-                long remaining = fileSize;
+            try {
+                using (var tempFileStream = File.Create(tempFile)) {
+                    byte[] buffer = new byte[81920];
+                    long remaining = fileSize;
 
-                while (remaining > 0) {
-                    long sent = fileSize - remaining;
-                    ReceivingProgress = (float)sent / fileSize;
+                    while (remaining > 0) {
+                        long sent = fileSize - remaining;
+                        ReceivingProgress = (float)sent / fileSize;
 
-                    try {
                         int read = await stream.ReadAsync(buffer, 0, (int)Math.Min(buffer.Length, remaining), receivingCts.Token);
                         if (read == 0) throw new IOException("Incomplete transfer.");
 
                         await tempFileStream.WriteAsync(buffer, 0, read, receivingCts.Token);
                         remaining -= read;
-                    } catch (OperationCanceledException) {
-                        notifier.Info("Receiving canceled.");
-
-                        DispatchEventNotify(EventId.DISCONNECTED);
-
-                        return;
-                    } catch(Exception e) {
-                        notifier.Error("Receiving failed.");
-
-                        DispatchEventNotify(EventId.DISCONNECTED);
-
-                        return;
                     }
                 }
+
+                File.Move(tempFile, databasePath, overwrite: true);
+
+                notifier.Info("Database received. Disconnecting.");
+            } catch (OperationCanceledException) {
+                notifier.Info("Receiving canceled.");
+            } catch (Exception) {
+                notifier.Error("Receiving failed.");
+            } finally {
+                DispatchEventNotify(EventId.DISCONNECTED);
             }
-
-            File.Move(tempFile, databasePath, overwrite: true);
-
-            notifier.Info("Database received. Disconnecting.");
-            DispatchEventNotify(EventId.DISCONNECTED);
         }
 
         void OnReceivingExit() {
