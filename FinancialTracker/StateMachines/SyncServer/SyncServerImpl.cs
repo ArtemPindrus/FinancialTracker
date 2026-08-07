@@ -1,12 +1,10 @@
 ﻿using FinancialTracker.DataAccessLayer.Services;
 using FinancialTracker.Services;
-using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace FinancialTracker.StateMachines {
     public partial class SyncServer : BaseStateMachine<SyncServer.EventId>, IDisposable {
@@ -56,7 +54,7 @@ namespace FinancialTracker.StateMachines {
             try {
                 tcpClient = await tcpListener.AcceptTcpClientAsync();
             } catch {
-
+                return;
             }
 
             DispatchEventNotify(EventId.GOTCONNECTION);
@@ -90,6 +88,8 @@ namespace FinancialTracker.StateMachines {
             } catch {
                 notifier.Error("Failed to send database.");
                 DispatchEventNotify(EventId.DISCONNECTED);
+
+                return;
             }
 
             notifier.Info("Sent database. Disconnecting.");
