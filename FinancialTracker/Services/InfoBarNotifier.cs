@@ -1,4 +1,5 @@
-﻿using FluentAvalonia.UI.Controls;
+﻿using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using System;
 
 namespace FinancialTracker.Services {
@@ -20,10 +21,12 @@ namespace FinancialTracker.Services {
         }
 
         public void Log(string message, InfoBarSeverity severity) {
-            infoBar.IsOpen = true;
+            Dispatcher.UIThread.Invoke(() => {
+                infoBar.IsOpen = true;
 
-            infoBar.Message = $"[{DateTime.Now:HH:mm:ss}] {message}";
-            infoBar.Severity = severity;
+                infoBar.Message = $"[{DateTime.Now:HH:mm:ss}] {message}";
+                infoBar.Severity = severity;
+            });
         }
     }
 }
