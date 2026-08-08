@@ -36,13 +36,13 @@
                 Command="{Binding UndoCommand}"
                 HotKey="Ctrl+Z"
                 ToolTip.Tip="Undo last change. (Ctrl+Z)">
-                <ui:FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE10E;" />
+                <ui:FAFontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE10E;" />
             </Button>
             <Button
                 Command="{Binding RedoCommand}"
                 HotKey="Ctrl+Y"
                 ToolTip.Tip="Redo last change. (Ctrl+Y)">
-                <ui:FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE10D;" />
+                <ui:FAFontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE10D;" />
             </Button>
         </StackPanel>
 

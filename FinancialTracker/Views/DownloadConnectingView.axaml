@@ -16,7 +16,7 @@
             FontWeight="SemiBold"
             Text="Connecting..." />
 
-        <ui:ProgressRing IsIndeterminate="True" />
+        <ui:FAProgressRing IsIndeterminate="True" />
 
         <TextBlock
             FontSize="13"

@@ -13,12 +13,12 @@ public partial class MainViewModel : ViewModelBase
     private readonly ViewModelResolver viewModelResolver;
 
     [ObservableProperty]
-    public partial NavigationViewItem? SelectedNavigationItem { get; set; }
+    public partial FANavigationViewItem? SelectedNavigationItem { get; set; }
 
     [ObservableProperty]
     public partial MainNavigationPaneViewModel? ViewModel { get; set; }
 
-    public InfoBar InfoBar { get; }
+    public FAInfoBar InfoBar { get; }
 
     public MainViewModel(ViewModelResolver viewModelResolver) {
         this.viewModelResolver = viewModelResolver;
@@ -29,11 +29,11 @@ public partial class MainViewModel : ViewModelBase
         };
     }
 
-    async partial void OnSelectedNavigationItemChanged(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
+    async partial void OnSelectedNavigationItemChanged(FANavigationViewItem? oldValue, FANavigationViewItem? newValue) {
         await NavigateToSafeAsync(oldValue, newValue);
     }
 
-    async Task NavigateToSafeAsync(NavigationViewItem? oldValue, NavigationViewItem? newValue) {
+    async Task NavigateToSafeAsync(FANavigationViewItem? oldValue, FANavigationViewItem? newValue) {
         if (newValue?.Content is not string newNavigationString
             || newNavigationString == lastNavigationItemContent) return;
 

@@ -15,6 +15,6 @@
         VerticalAlignment="Center"
         Orientation="Vertical">
         <TextBlock Text="{Binding Message}" />
-        <ui:ProgressRing />
+        <ui:FAProgressRing />
     </StackPanel>
 </UserControl>

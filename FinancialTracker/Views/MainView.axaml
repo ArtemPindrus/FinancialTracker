@@ -21,26 +21,26 @@
     </Design.DataContext>
 
     <dialogHost:DialogHost Identifier="MainDialogHost">
-        <ui:NavigationView
+        <ui:FANavigationView
             IsSettingsVisible="False"
             OpenPaneLength="200"
             PaneDisplayMode="Left"
             SelectedItem="{Binding SelectedNavigationItem}">
-            <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="Finances" />
-                <ui:NavigationViewItem Content="Raw Query" />
-                <ui:NavigationViewItem Content="Charts" SelectsOnInvoked="False">
-                    <ui:NavigationViewItem.MenuItems>
-                        <ui:NavigationViewItem Content="Yearly Expenses" />
-                    </ui:NavigationViewItem.MenuItems>
-                </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="Sync" SelectsOnInvoked="False">
-                    <ui:NavigationViewItem.MenuItems>
-                        <ui:NavigationViewItem Content="Upload" />
-                        <ui:NavigationViewItem Content="Download" />
-                    </ui:NavigationViewItem.MenuItems>
-                </ui:NavigationViewItem>
-            </ui:NavigationView.MenuItems>
+            <ui:FANavigationView.MenuItems>
+                <ui:FANavigationViewItem Content="Finances" />
+                <ui:FANavigationViewItem Content="Raw Query" />
+                <ui:FANavigationViewItem Content="Charts" SelectsOnInvoked="False">
+                    <ui:FANavigationViewItem.MenuItems>
+                        <ui:FANavigationViewItem Content="Yearly Expenses" />
+                    </ui:FANavigationViewItem.MenuItems>
+                </ui:FANavigationViewItem>
+                <ui:FANavigationViewItem Content="Sync" SelectsOnInvoked="False">
+                    <ui:FANavigationViewItem.MenuItems>
+                        <ui:FANavigationViewItem Content="Upload" />
+                        <ui:FANavigationViewItem Content="Download" />
+                    </ui:FANavigationViewItem.MenuItems>
+                </ui:FANavigationViewItem>
+            </ui:FANavigationView.MenuItems>
 
             <dialogHost:DialogHost Identifier="ContentDialogHost">
                 <Grid RowDefinitions="*, Auto">
@@ -49,7 +49,7 @@
                     <ContentControl Grid.Row="1" Content="{Binding InfoBar}" />
                 </Grid>
             </dialogHost:DialogHost>
-        </ui:NavigationView>
+        </ui:FANavigationView>
     </dialogHost:DialogHost>
 
 </UserControl>

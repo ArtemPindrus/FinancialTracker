@@ -17,7 +17,7 @@
             Text="Receiving Data"
             TextAlignment="Center" />
 
-        <ui:ProgressRing
+        <ui:FAProgressRing
             Width="80"
             Height="80"
             HorizontalAlignment="Center"

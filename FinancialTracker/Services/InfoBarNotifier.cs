@@ -4,23 +4,23 @@ using System;
 
 namespace FinancialTracker.Services {
     public class InfoBarNotifier : IErrorNotifier {
-        readonly InfoBar infoBar;
+        readonly FAInfoBar infoBar;
 
-        public InfoBarNotifier(InfoBar infoBar) {
+        public InfoBarNotifier(FAInfoBar infoBar) {
             this.infoBar = infoBar;
         }
 
-        public void Info(string message) => Log(message, InfoBarSeverity.Informational);
+        public void Info(string message) => Log(message, FAInfoBarSeverity.Informational);
 
         public void Error(string message) {
-            Log(message, InfoBarSeverity.Error);
+            Log(message, FAInfoBarSeverity.Error);
         }
 
         public void Warning(string message) {
-            Log(message, InfoBarSeverity.Warning);
+            Log(message, FAInfoBarSeverity.Warning);
         }
 
-        public void Log(string message, InfoBarSeverity severity) {
+        public void Log(string message, FAInfoBarSeverity severity) {
             Dispatcher.UIThread.Invoke(() => {
                 infoBar.IsOpen = true;
 

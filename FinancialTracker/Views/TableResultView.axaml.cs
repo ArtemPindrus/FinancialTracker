@@ -19,7 +19,7 @@ public partial class TableResultView : UserControl {
 
             DataGridTextColumn textColumn = new() {
                 Header = column,
-                Binding = new Binding($"[{i}]")
+                Binding = new ReflectionBinding($"[{i}]")
             };
 
             DataGrid.Columns.Add(textColumn);
