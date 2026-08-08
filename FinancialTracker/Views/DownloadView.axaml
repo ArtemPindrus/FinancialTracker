@@ -9,5 +9,9 @@
     d:DesignWidth="800"
     x:DataType="viewmodels:DownloadViewModel"
     mc:Ignorable="d">
-    <ContentControl HorizontalAlignment="Center" Content="{Binding CurrentViewModel}" />
+    <ContentControl
+        Padding="32"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Content="{Binding CurrentViewModel}" />
 </UserControl>

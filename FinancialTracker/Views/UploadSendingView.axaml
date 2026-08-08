@@ -9,12 +9,36 @@
     d:DesignWidth="800"
     x:DataType="vm:UploadSendingViewModel"
     mc:Ignorable="d">
-    <StackPanel>
-        <TextBlock Text="{Binding IpAddress, StringFormat='Sending to: {0}'}" />
+    <StackPanel Width="320" Spacing="16">
+        <TextBlock
+            FontSize="16"
+            FontWeight="SemiBold"
+            Text="Sending Database" />
 
-        <StackPanel Orientation="Horizontal">
-            <Button Command="{Binding DisconnectCommand}" Content="Disconnect" />
-            <Button Command="{Binding StopServerCommand}" Content="Stop server" />
+        <TextBlock
+            FontSize="13"
+            Text="{Binding IpAddress, StringFormat='Sending to: {0}'}"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+
+        <Separator Height="1" Margin="0,4,0,4" />
+
+        <StackPanel
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Width="150"
+                Padding="12,8"
+                Command="{Binding DisconnectCommand}"
+                Content="Disconnect"
+                FontSize="12" />
+            <Button
+                Width="150"
+                Padding="12,8"
+                Command="{Binding StopServerCommand}"
+                Content="Stop Server"
+                FontSize="12" />
         </StackPanel>
     </StackPanel>
 </UserControl>

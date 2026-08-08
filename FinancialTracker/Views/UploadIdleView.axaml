@@ -9,5 +9,28 @@
     d:DesignWidth="800"
     x:DataType="vm:UploadIdleViewModel"
     mc:Ignorable="d">
-    <Button Command="{Binding StartServerCommand}" Content="Start Server" />
+    <StackPanel
+        Width="300"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Spacing="12">
+        <TextBlock
+            FontSize="16"
+            FontWeight="SemiBold"
+            Text="Upload Server"
+            TextAlignment="Center" />
+
+        <TextBlock
+            FontSize="12"
+            Text="Start a server to send database to another device"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+
+        <Button
+            Padding="12,8"
+            Command="{Binding StartServerCommand}"
+            Content="Start Server"
+            FontSize="13"
+            IsDefault="True" />
+    </StackPanel>
 </UserControl>

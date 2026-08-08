@@ -9,11 +9,22 @@
     d:DesignWidth="800"
     x:DataType="vm:DownloadConnectedViewModel"
     mc:Ignorable="d">
-    <StackPanel>
-        <TextBlock Text="{Binding IpAddress, StringFormat='Connected to: {0}'}" />
+    <StackPanel Width="300" Spacing="16">
+        <TextBlock
+            FontSize="16"
+            FontWeight="SemiBold"
+            Text="Connected" />
 
-        <StackPanel Orientation="Horizontal">
-            <Button Command="{Binding DisconnectCommand}" Content="Disconnect" />
-        </StackPanel>
+        <TextBlock
+            FontSize="13"
+            Text="{Binding IpAddress, StringFormat='Connected to: {0}'}"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+
+        <Button
+            Padding="12,8"
+            Command="{Binding DisconnectCommand}"
+            Content="Disconnect"
+            FontSize="13" />
     </StackPanel>
 </UserControl>

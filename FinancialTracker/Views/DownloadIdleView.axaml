@@ -9,8 +9,23 @@
     d:DesignWidth="800"
     x:DataType="vm:DownloadIdleViewModel"
     mc:Ignorable="d">
-    <StackPanel>
-        <TextBox Text="{Binding IpAddress}" Watermark="Server IP" />
-        <Button Command="{Binding ConnectCommand}" Content="Connect" />
+    <StackPanel Width="300" Spacing="12">
+        <TextBlock
+            FontSize="16"
+            FontWeight="SemiBold"
+            Text="Connect to Server" />
+
+        <TextBox
+            Padding="12,10"
+            FontSize="13"
+            Text="{Binding IpAddress}"
+            Watermark="Server IP (e.g., 192.168.1.100)" />
+
+        <Button
+            Padding="12,8"
+            Command="{Binding ConnectCommand}"
+            Content="Connect"
+            FontSize="13"
+            IsDefault="True" />
     </StackPanel>
 </UserControl>
