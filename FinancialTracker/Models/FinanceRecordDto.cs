@@ -1,25 +1,24 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FinancialTracket.DataAccessLayer.Models;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
 
 namespace FinancialTracker.Models {
+    // TODO: rename to viewmodel
     public partial class FinanceRecordDto : ObservableObject {
         [ObservableProperty]
-        private string name;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
-        private double amount;
+        public partial double Amount { get; set; }
 
         [ObservableProperty]
-        private DateOnly date;
+        public partial DateOnly Date { get; set; }
 
         [ObservableProperty]
-        private bool isDeleted;
+        public partial bool IsDeleted { get; set; }
+
+        [ObservableProperty]
+        public partial List<string> Tags { get; set; }
 
         public bool IsModified { get; private set; }
 
@@ -27,38 +26,18 @@ namespace FinancialTracker.Models {
 
         public bool IsAdded { get; }
 
-        public ObservableCollection<string> Tags { get; }
 
         public FinanceRecordDto(int id, string name, double amount, DateOnly date, IEnumerable<string> tags, 
             bool isAdded = false) {
             this.Id = id;
-            this.name = name;
-            this.amount = amount;
-            this.date = date;
+            Name = name;
+            Amount = amount;
+            Date = date;
             IsAdded = isAdded;
             Tags = new(tags);
-
-            if (!isAdded) {
-                PropertyChanged += FinanceRecordDto_PropertyChanged;
-                Tags.CollectionChanged += Tags_CollectionChanged;
-            }
         }
 
         public FinanceRecordDto() : this(-1, string.Empty, 0, DateOnly.FromDateTime(DateTime.Now), [], true) {
-        }
-
-        private void Tags_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
-            OnChanged();
-        }
-
-        private void FinanceRecordDto_PropertyChanged(object? sender, PropertyChangedEventArgs e){
-            OnChanged();
-        }
-
-        private void OnChanged() {
-            if (IsDeleted) return;
-
-            IsModified = true;
         }
     }
 }
