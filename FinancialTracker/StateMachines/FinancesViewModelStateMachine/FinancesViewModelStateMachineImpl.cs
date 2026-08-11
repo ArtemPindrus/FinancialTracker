@@ -17,7 +17,7 @@ namespace FinancialTracker.StateMachines {
         readonly IDbContextFactory<AppDbContext> dbContextFactory;
 
         [ObservableProperty]
-        public partial List<string>? Tags { get; private set; }
+        public partial List<string> Tags { get; private set; } = [];
 
         [ObservableProperty]
         public partial List<FinanceRecordDto> Finances { get; set; } = [];
