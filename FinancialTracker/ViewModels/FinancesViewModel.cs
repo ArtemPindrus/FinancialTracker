@@ -3,6 +3,7 @@ using Avalonia.Data;
 using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Commands;
 using FinancialTracker.Models;
+using FinancialTracker.Services;
 using FinancialTracker.StateMachines;
 using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,8 @@ using System.Windows.Input;
 namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : MainNavigationPaneViewModel {
         readonly FinancesViewModelStateMachine stateMachine;
+
+        public INavigationService? NavigationService { get; set; }
 
         public List<string>? Tags => stateMachine.Tags;
 
