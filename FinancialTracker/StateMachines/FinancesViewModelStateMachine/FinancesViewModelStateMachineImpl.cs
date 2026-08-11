@@ -7,6 +7,7 @@ using FinancialTracker.ViewModels;
 using FinancialTracket.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;

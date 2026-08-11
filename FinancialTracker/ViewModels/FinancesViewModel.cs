@@ -30,9 +30,7 @@ namespace FinancialTracker.ViewModels {
 
         public bool HasModifications => Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded);
 
-        public IEnumerable<FinanceRecordDto>? SelectedFinances => SelectedFinancesBind?.Cast<FinanceRecordDto>();
-
-        public IList? SelectedFinancesBind { get; set; }
+        public List<FinanceRecordDto> SelectedFinances { get; set; } = [];
 
         public ObservableCollection<MenuItem> AddTagsMenuItems { 
             get; 

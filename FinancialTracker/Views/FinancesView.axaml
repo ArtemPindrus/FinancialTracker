@@ -48,14 +48,14 @@
                     </Button>
                 </StackPanel>
 
-                <controls:NotifyingDataGrid
+                <TableView
                     x:Name="Table"
                     Grid.Row="1"
-                    AutoGenerateColumns="False"
-                    ItemsSource="{Binding Finances, Mode=OneWay}"
-                    SelectedItemsBinding="{Binding SelectedFinancesBind}">
-                    <controls:NotifyingDataGrid.Styles>
-                        <Style Selector="DataGridRow">
+                    ItemsSource="{Binding Finances}"
+                    SelectedItems="{Binding SelectedFinances}"
+                    SelectionMode="Multiple">
+                    <TableView.Styles>
+                        <Style Selector="TableViewRow">
                             <Setter Property="ContextFlyout">
                                 <MenuFlyout>
                                     <MenuFlyout.Items>
@@ -78,39 +78,37 @@
 
                             <Setter x:DataType="models:FinanceRecordDto" Property="Classes.IsDisabled" Value="{Binding IsDeleted}" />
                         </Style>
-                        <Style Selector="DataGridRow.IsDisabled">
+
+                        <Style Selector="TableViewRow.IsDisabled">
                             <Setter Property="Foreground" Value="Gray" />
                         </Style>
-                    </controls:NotifyingDataGrid.Styles>
+                    </TableView.Styles>
 
-                    <controls:NotifyingDataGrid.Columns>
-                        <DataGridTextColumn
+                    <TableView.Columns>
+                        <TableViewColumn
+                            Width="60"
                             x:DataType="models:FinanceRecordDto"
                             Binding="{Binding Id}"
-                            Header="Id"
-                            IsReadOnly="True" />
-                        <DataGridTextColumn
+                            Header="Id" />
+                        <TableViewColumn
                             x:DataType="models:FinanceRecordDto"
                             Binding="{Binding Name, UpdateSourceTrigger=LostFocus}"
-                            Header="Name"
-                            IsReadOnly="True" />
-                        <DataGridTextColumn
+                            Header="Name" />
+                        <TableViewColumn
                             x:DataType="models:FinanceRecordDto"
                             Binding="{Binding Amount, UpdateSourceTrigger=LostFocus}"
-                            Header="Amount"
-                            IsReadOnly="True" />
-                        <DataGridTextColumn
+                            Header="Amount" />
+                        <TableViewColumn
                             x:DataType="models:FinanceRecordDto"
                             Binding="{Binding Date, UpdateSourceTrigger=LostFocus}"
-                            Header="Date"
-                            IsReadOnly="True" />
-                        <DataGridTemplateColumn Header="Tags">
-                            <DataGridTemplateColumn.CellTemplate>
+                            Header="Date" />
+                        <TableViewColumn Header="Tags">
+                            <TableViewColumn.CellTemplate>
                                 <DataTemplate DataType="models:FinanceRecordDto">
                                     <ItemsControl ItemsSource="{Binding Tags}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <WrapPanel ItemSpacing="3" />
+                                                <WrapPanel ItemSpacing="3" LineSpacing="3" />
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
 
@@ -127,10 +125,10 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                 </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </controls:NotifyingDataGrid.Columns>
-                </controls:NotifyingDataGrid>
+                            </TableViewColumn.CellTemplate>
+                        </TableViewColumn>
+                    </TableView.Columns>
+                </TableView>
             </Grid>
         </ContentPage>
     </NavigationPage>

@@ -33,7 +33,7 @@ namespace FinancialTracker.Commands {
                 i.IsDeleted = !i.IsDeleted;
             }
 
-            IList? selected = vm.SelectedFinancesBind;
+            List<FinanceRecordDto> selected = vm.SelectedFinances;
             selected.Clear();
 
             foreach (var m in lastMarked) {
