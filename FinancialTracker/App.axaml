@@ -13,9 +13,10 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-        <!--<FluentTheme />-->
+        <FluentTheme />
 
         <sty:FluentAvaloniaTheme />
+
         <dialogHostAvalonia:DialogHostStyles />
     </Application.Styles>
 </Application>
