@@ -24,6 +24,7 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Xaml.Behaviors.Interactions" />
   </ItemGroup>
 
   <ItemGroup>

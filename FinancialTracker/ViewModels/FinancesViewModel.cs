@@ -82,17 +82,19 @@ namespace FinancialTracker.ViewModels {
                     DialogHostHelper.MainDialogIdentifier,
                     cancelAction: () => { },
                     continueAction: Proceed);
+            } else Proceed();
+        }
 
-                return;
-            }
+        [RelayCommand]
+        private async Task OpenFinanceUpdateAsync(FinanceRecordDto finance) {
+            FinanceUpdateViewModel vm = new(finance);
 
-            Proceed();
+            await NavigationService.NavigateToAsync(vm);
         }
 
         [RelayCommand]
         private void AddTagToSelectedRecords(string tag) {
             CommandHistory.Execute(new AddTagFromSelectedRecordsCommand(tag, this));
-
         }
 
         [RelayCommand]
