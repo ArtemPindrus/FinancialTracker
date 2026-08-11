@@ -92,23 +92,43 @@
                         <DataGridTextColumn
                             x:DataType="models:FinanceRecordDto"
                             Binding="{Binding Name, UpdateSourceTrigger=LostFocus}"
-                            Header="Name" />
+                            Header="Name"
+                            IsReadOnly="True" />
                         <DataGridTextColumn
                             x:DataType="models:FinanceRecordDto"
                             Binding="{Binding Amount, UpdateSourceTrigger=LostFocus}"
-                            Header="Amount" />
+                            Header="Amount"
+                            IsReadOnly="True" />
                         <DataGridTextColumn
                             x:DataType="models:FinanceRecordDto"
                             Binding="{Binding Date, UpdateSourceTrigger=LostFocus}"
                             Header="Date"
-                            IsReadOnly="False" />
-                        <!--<DataGridTemplateColumn Header="Tags">
+                            IsReadOnly="True" />
+                        <DataGridTemplateColumn Header="Tags">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="models:FinanceRecordDto">
-                                    <controls:TagsList SelectedTags="{Binding Tags}" Tags="{Binding $parent[DataGrid].DataContext.Tags}" />
+                                    <ItemsControl ItemsSource="{Binding Tags}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel ItemSpacing="3" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border
+                                                    Padding="5"
+                                                    VerticalAlignment="Center"
+                                                    Background="Gray"
+                                                    CornerRadius="5">
+                                                    <TextBlock Text="{Binding}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>-->
+                        </DataGridTemplateColumn>
                     </controls:NotifyingDataGrid.Columns>
                 </controls:NotifyingDataGrid>
             </Grid>

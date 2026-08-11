@@ -21,7 +21,7 @@ namespace FinancialTracker.ViewModels {
 
         public INavigationService? NavigationService { get; set; }
 
-        public List<string>? Tags => stateMachine.Tags;
+        public List<string> Tags => stateMachine.Tags;
 
         public ICommand UndoCommand => CommandHistory.UndoCommand;
         public ICommand RedoCommand => CommandHistory.RedoCommand;
@@ -87,7 +87,7 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private async Task OpenFinanceUpdateAsync(FinanceRecordDto finance) {
-            FinanceUpdateViewModel vm = new(finance);
+            FinanceUpdateViewModel vm = new(finance, Tags);
 
             await NavigationService.NavigateToAsync(vm);
         }

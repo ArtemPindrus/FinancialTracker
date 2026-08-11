@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace FinancialTracker.ViewModels;
 
@@ -22,15 +24,43 @@ public partial class FinanceUpdateViewModel : ViewModelBase {
     public partial bool IsDeleted { get; set; }
 
     [ObservableProperty]
-    public partial List<string> Tags { get; set; }
+    public partial string? TagTextBox { get; set; }
 
-    public FinanceUpdateViewModel(FinanceRecordDto record) {
+    [ObservableProperty]
+    public partial ObservableCollection<string> Tags { get; set; }
+
+    public List<string> SelectedTags { get; set; } = [];
+
+    public List<string> AvailableTags { get; }
+
+    public FinanceUpdateViewModel(FinanceRecordDto record, List<string> availableTags) {
         Name = record.Name;
         Amount = record.Amount;
         Date = record.Date;
-        Tags = [.. record.Tags];
+        Tags = new(record.Tags);
         IsDeleted = record.IsDeleted;
+        AvailableTags = availableTags;
+
         this.record = record;
+    }
+
+    [RelayCommand]
+    void AddTag(string tag) {
+        Tags.Add(tag);
+
+        TagTextBox = "";
+    }
+
+    [RelayCommand]
+    void DeleteTags(IEnumerable<string> tags) {
+        foreach (var t in tags.ToArray()) {
+            DeleteTag(t);
+        }
+    }
+
+    [RelayCommand]
+    void DeleteTag(string tag) {
+        Tags.Remove(tag);
     }
 
     [RelayCommand]
