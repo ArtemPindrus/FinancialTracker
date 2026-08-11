@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using FinancialTracker.Services;
 using FinancialTracker.ViewModels;
 using System;
@@ -12,14 +10,12 @@ public partial class FinancesView : UserControl
     public FinancesView()
     {
         InitializeComponent();
-
-        
     }
 
     protected override void OnDataContextChanged(EventArgs e) {
         base.OnDataContextChanged(e);
 
-        if (DataContext is not FinancesViewModel vm) throw new Exception("Unexpected DataContext type.");
+        if (DataContext is not FinancesViewModel vm) return;
 
         INavigationService navigationService = new NavigationPageNavigationServicer(NavigationPage);
 
