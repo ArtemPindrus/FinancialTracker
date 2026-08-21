@@ -17,5 +17,9 @@ namespace FinancialTracker.Services {
 
             await navigationPage.PushAsync(c);
         }
+
+        public async Task NavigateBackAsync() {
+            await navigationPage.PopAsync();
+        }
     }
 }
