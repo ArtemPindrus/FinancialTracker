@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace FinancialTracker.Commands {
     public class CommandHistory : ICommandInvoker {
-        readonly Stack<IUndoableCommand> executed = new();
-        readonly Stack<IUndoableCommand> undone = new();
+        readonly Stack<(IUndoableCommand, object?)> executed = new();
+        readonly Stack<(IUndoableCommand, object?)> undone = new();
 
         public int ExecutedCount => executed.Count;
         public int UndoneCount => undone.Count;
@@ -17,11 +17,11 @@ namespace FinancialTracker.Commands {
             RedoCommand = new RelayCommand(Redo, () => UndoneCount > 0);
         }
 
-        public void Execute(IUndoableCommand command) {
-            command.Execute();
+        public void Execute(IUndoableCommand command, object? parameter = null) {
+            command.Execute(parameter);
 
             if (command.IsReversable) {
-                executed.Push(command);
+                executed.Push((command, parameter));
                 undone.Clear();
 
                 NotifyCanExecuteChanged();
@@ -30,8 +30,8 @@ namespace FinancialTracker.Commands {
 
         public void Undo() {
             if (executed.Count > 0) {
-                var cmd = executed.Pop();
-                cmd.Unexecute();
+                (IUndoableCommand c, object? p) cmd = executed.Pop();
+                cmd.c.Unexecute();
                 undone.Push(cmd);
 
                 NotifyCanExecuteChanged();
@@ -40,8 +40,8 @@ namespace FinancialTracker.Commands {
 
         public void Redo() {
             if (undone.Count > 0) {
-                var cmd = undone.Pop();
-                cmd.Execute();
+                (IUndoableCommand c, object? p) cmd = undone.Pop();
+                cmd.c.Execute(cmd.p);
                 executed.Push(cmd);
 
                 NotifyCanExecuteChanged();

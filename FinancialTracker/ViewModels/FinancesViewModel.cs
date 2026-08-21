@@ -19,7 +19,7 @@ namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : MainNavigationPaneViewModel {
         readonly FinancesViewModelStateMachine stateMachine;
 
-        public INavigationService? NavigationService { get; set; }
+        public INavigationService NavigationService { get; set; }
 
         public List<string> Tags => stateMachine.Tags;
 
@@ -95,6 +95,16 @@ namespace FinancialTracker.ViewModels {
         }
 
         [RelayCommand]
+        private async Task OpenNewRecordViewAsync() {
+            FinanceAddViewModel vm = new(Tags, addAction: async (record) => {
+                CommandHistory.Execute(new AddFinanceCommand(Finances, record));
+                await NavigationService.NavigateBackAsync();
+            });
+
+            await NavigationService.NavigateToAsync(vm);
+        }
+
+        [RelayCommand]
         private void AddTagToSelectedRecords(string tag) {
             CommandHistory.Execute(new AddTagFromSelectedRecordsCommand(tag, this));
         }
@@ -109,9 +119,6 @@ namespace FinancialTracker.ViewModels {
             CommandHistory.Execute(new MarkRecordDeletedCommand(this));
         }
 
-        [RelayCommand]
-        private void AddDefaultRecord() {
-            CommandHistory.Execute(new AddDefaultFinanceRecord(Finances));
-        }
+        
     }
 }

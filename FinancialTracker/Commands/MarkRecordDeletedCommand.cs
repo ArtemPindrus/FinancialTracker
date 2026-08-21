@@ -4,18 +4,18 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace FinancialTracker.Commands {
-    public class MarkRecordDeletedCommand : IUndoableCommand {
+    public class MarkRecordDeletedCommand : UndoableCommand {
         private readonly FinancesViewModel vm;
 
         List<FinanceRecordDto>? lastMarked;
 
-        public bool IsReversable => true;
+        public override bool IsReversable => true;
 
         public MarkRecordDeletedCommand(FinancesViewModel vm) {
             this.vm = vm;
         }
 
-        public void Execute() {
+        public override void Execute(object? p) {
             if (lastMarked is null) {
                 lastMarked = new();
                 lastMarked.AddRange(vm.SelectedFinances);
@@ -26,7 +26,7 @@ namespace FinancialTracker.Commands {
             }
         }
 
-        public void Unexecute() {
+        public override void Unexecute() {
             if (lastMarked is null) return;
 
             foreach (FinanceRecordDto i in lastMarked) {
@@ -40,5 +40,7 @@ namespace FinancialTracker.Commands {
                 selected.Add(m);
             }
         }
+
+        public override bool CanExecute(object? parameter) => true;
     }
 }

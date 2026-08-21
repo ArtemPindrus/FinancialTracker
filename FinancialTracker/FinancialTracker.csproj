@@ -33,6 +33,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\FinanceEditView.axaml.cs">
+      <DependentUpon>FinanceEditView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ProgressRingView.axaml.cs">
       <DependentUpon>ProgressRingView.axaml</DependentUpon>
     </Compile>

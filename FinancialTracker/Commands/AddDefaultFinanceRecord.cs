@@ -1,29 +1,30 @@
 ﻿using FinancialTracker.Models;
-using System;
 using System.Collections.Generic;
 
 namespace FinancialTracker.Commands {
-    public class AddDefaultFinanceRecord : IUndoableCommand {
+    public class AddDefaultFinanceRecord : UndoableCommand {
         readonly IList<FinanceRecordDto> finances;
 
         FinanceRecordDto? lastAddedRecord;
 
-        public bool IsReversable => true;
+        public override bool IsReversable => true;
 
         public AddDefaultFinanceRecord(IList<FinanceRecordDto> finances) {
             this.finances = finances;
         }
 
-        public void Execute() {
+        public override void Execute(object? p) {
             lastAddedRecord = new();
             finances.Add(lastAddedRecord);
         }
 
-        public void Unexecute() {
+        public override void Unexecute() {
             if (lastAddedRecord != null) {
                 finances.Remove(lastAddedRecord);
                 lastAddedRecord = null;
             }
         }
+
+        public override bool CanExecute(object? parameter) => true;
     }
 }

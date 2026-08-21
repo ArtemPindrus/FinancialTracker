@@ -4,7 +4,7 @@ using System.Text;
 
 namespace FinancialTracker.Commands {
     public interface ICommandInvoker {
-        void Execute(IUndoableCommand command);
+        void Execute(IUndoableCommand command, object? parameter);
 
         void Undo();
 

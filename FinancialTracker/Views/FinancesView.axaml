@@ -22,7 +22,7 @@
                         HotKey="Ctrl+S"
                         ToolTip.Tip="Save changes. (Ctrl+S)" />
                     <Button
-                        Command="{Binding AddDefaultRecordCommand}"
+                        Command="{Binding OpenNewRecordViewCommand}"
                         Content="Add"
                         ToolTip.Tip="Add new record." />
 
