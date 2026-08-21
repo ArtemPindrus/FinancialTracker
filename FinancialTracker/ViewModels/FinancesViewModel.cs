@@ -26,11 +26,15 @@ namespace FinancialTracker.ViewModels {
         public ICommand UndoCommand => CommandHistory.UndoCommand;
         public ICommand RedoCommand => CommandHistory.RedoCommand;
 
-        public List<FinanceRecordDto> Finances => stateMachine.Finances;
+
+        public ObservableCollection<FinanceRecordDto> Finances => stateMachine.Finances;
 
         public bool HasModifications => Finances.Any(f => f.IsModified) || Finances.Any(x => x.IsAdded);
 
-        public List<FinanceRecordDto> SelectedFinances { get; set; } = [];
+        public IList SelectedFinancesBind { get; set; } = new List<FinanceRecordDto>();
+
+        public IList<FinanceRecordDto> SelectedFinances => SelectedFinancesBind.Cast<FinanceRecordDto>()
+            .ToList();
 
         public ObservableCollection<MenuItem> AddTagsMenuItems { 
             get; 

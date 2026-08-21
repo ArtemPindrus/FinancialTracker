@@ -20,8 +20,7 @@ namespace FinancialTracker.StateMachines {
         [ObservableProperty]
         public partial List<string> Tags { get; private set; } = [];
 
-        [ObservableProperty]
-        public partial List<FinanceRecordDto> Finances { get; set; } = [];
+        public ObservableCollection<FinanceRecordDto> Finances { get; set; } = [];
 
         public CommandHistory CommandHistory { get; }
 
@@ -53,20 +52,28 @@ namespace FinancialTracker.StateMachines {
         async void OnPopulatingEnter() {
             _ = DialogHostHelper.ShowContentDialog(new ProgressRingViewModel("Querying database..."));
 
+            Finances.Clear();
             using AppDbContext dbContext = dbContextFactory.CreateDbContext();
 
             await Task.Run(() => {
                 Tags = dbContext.Tags.Select(x => x.Name).ToList();
 
-                Dispatcher.UIThread.Invoke(() => {
+                Dispatcher uIThread = Dispatcher.UIThread;
+                uIThread.Invoke(() => {
                     InitializeMenuItems(vm.AddTagsMenuItems, vm.AddTagToSelectedRecordsCommand);
                     InitializeMenuItems(vm.RemoveTagsMenuItems, vm.RemoveTagFromSelectedRecordsCommand);
                 });
 
-                Finances = dbContext.Finances
+                var newList = dbContext.Finances
                     .Include(x => x.Tags)
                     .Select(x => x.ToDto())
                     .ToList();
+
+                uIThread.Invoke(() => {
+                    foreach (var item in newList) {
+                        Finances.Add(item);
+                    }
+                });
             });
 
             DispatchEventNotify(EventId.POPULATESUCCESS);
