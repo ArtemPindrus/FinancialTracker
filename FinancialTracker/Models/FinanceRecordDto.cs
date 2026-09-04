@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace FinancialTracker.Models {
     // TODO: rename to viewmodel
@@ -19,7 +19,7 @@ namespace FinancialTracker.Models {
         public partial bool IsDeleted { get; set; }
 
         [ObservableProperty]
-        public partial List<string> Tags { get; set; }
+        public partial ObservableCollection<string> Tags { get; set; }
 
         public bool IsModified { get; private set; }
 
@@ -37,14 +37,15 @@ namespace FinancialTracker.Models {
             IsAdded = isAdded;
             Tags = new(tags);
 
-            PropertyChanged += OnAnyPropertyChanged;
+            PropertyChanged += (_, _) => OnAnyPropertyChanged();
+            Tags.CollectionChanged += (_, _) => OnAnyPropertyChanged();
         }
         
 
         public FinanceRecordDto() : this(-1, string.Empty, 0, DateOnly.FromDateTime(DateTime.Now), [], true) {
         }
 
-        private void OnAnyPropertyChanged(object? sender, PropertyChangedEventArgs e) {
+        private void OnAnyPropertyChanged() {
             IsModified = true;
         }
     }
