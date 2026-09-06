@@ -45,6 +45,7 @@ namespace FinancialTracker.ViewModels {
 
             selectedYear = AvailableYears[0];
 
+            // TODO: construction should be fast
             UpdateData();
         }
 

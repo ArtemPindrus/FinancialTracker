@@ -18,6 +18,7 @@ namespace FinancialTracker.ViewModels {
     public partial class FinancesViewModel : MainNavigationPaneViewModel {
         readonly FinancesViewModelStateMachine stateMachine;
 
+        // TODO: constructor injection
         public INavigationService NavigationService { get; set; }
 
         public List<string> Tags => stateMachine.Tags;
@@ -117,7 +118,5 @@ namespace FinancialTracker.ViewModels {
         private void MarkRecordDeleted() {
             CommandHistory.Execute(new MarkRecordDeletedCommand(this));
         }
-
-        
     }
 }
