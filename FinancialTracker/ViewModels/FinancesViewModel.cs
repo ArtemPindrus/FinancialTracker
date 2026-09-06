@@ -105,7 +105,7 @@ namespace FinancialTracker.ViewModels {
 
         [RelayCommand]
         private void AddTagToSelectedRecords(string tag) {
-            CommandHistory.Execute(new AddTagFromSelectedRecordsCommand(tag, this));
+            CommandHistory.Execute(new AddTagFromSelectedRecordsCommand(tag, SelectedFinances));
         }
 
         [RelayCommand]

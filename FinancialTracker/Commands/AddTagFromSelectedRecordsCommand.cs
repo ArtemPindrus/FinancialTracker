@@ -4,20 +4,20 @@ using System.Collections.Generic;
 
 namespace FinancialTracker.Commands {
     public class AddTagFromSelectedRecordsCommand : UndoableCommand {
-        readonly FinancesViewModel vm;
         readonly string tag;
-        readonly List<FinanceRecordDto> modifiedFinances = new();
+        readonly IEnumerable<FinanceRecordDto> selectedFinances;
+        readonly List<FinanceRecordDto> modifiedFinances = [];
 
         public override bool IsReversable => modifiedFinances.Count > 0;
 
-        public AddTagFromSelectedRecordsCommand(string tag, FinancesViewModel vm) {
+        public AddTagFromSelectedRecordsCommand(string tag, IEnumerable<FinanceRecordDto> selectedFinances) {
             this.tag = tag;
-            this.vm = vm;
+            this.selectedFinances = selectedFinances;
         }
 
         public override void Execute(object? p) {
             if (modifiedFinances.Count == 0) {
-                foreach (var f in vm.SelectedFinances) {
+                foreach (var f in selectedFinances) {
                     if (!f.Tags.Contains(tag)) {
                         f.Tags.Add(tag);
                         modifiedFinances.Add(f);
