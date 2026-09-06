@@ -16,6 +16,8 @@ public partial class App : Application
     private static IServiceCollection? services;
 
     public static void ConfigureServices(IServiceCollection serviceCollection) {
+        if (services is not null) throw new Exception("Services have already been configured.");
+
         services = serviceCollection;
     }
 
@@ -32,7 +34,6 @@ public partial class App : Application
         if (Design.IsDesignMode) return;
 
         if (services is null) throw new Exception("Services were not configured.");
-
         services.InjectCommonServices();
 
         ServiceProvider serviceProvider = services.BuildServiceProvider();
