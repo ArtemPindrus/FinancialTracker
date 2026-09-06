@@ -1,4 +1,4 @@
-﻿using FinancialTracket.DataAccessLayer.Models;
+﻿using FinancialTracker.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinancialTracket.DataAccessLayer {

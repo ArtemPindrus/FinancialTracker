@@ -1,7 +1,7 @@
 ﻿using System;
 using Avalonia;
-using FinancialTracker.DataAccessLayer.Services;
 using FinancialTracker.Desktop.Services;
+using FinancialTracket.DataAccessLayer.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialTracker.Desktop;

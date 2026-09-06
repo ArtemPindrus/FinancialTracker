@@ -1,7 +1,9 @@
-﻿using FinancialTracker.Services;
+﻿using FinancialTracker.Domain;
+using FinancialTracker.Services;
 using FinancialTracker.StateMachines;
 using FinancialTracker.ViewModels;
 using FinancialTracket.DataAccessLayer;
+using FinancialTracket.DataAccessLayer.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialTracker {
@@ -27,6 +29,12 @@ namespace FinancialTracker {
 
             services.AddTransient<SyncClient>();
             services.AddTransient<SyncServer>();
+
+
+
+            services.AddTransient<IRawSqlService, RawSqlService>();
+            services.AddTransient<IFinancesService, SqlFinancesService>();
+            services.AddTransient<ITagsService, SqlTagsService>();
 
 
             return services;

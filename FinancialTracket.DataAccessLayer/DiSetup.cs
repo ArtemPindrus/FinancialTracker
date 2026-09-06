@@ -1,5 +1,5 @@
-﻿using FinancialTracker.DataAccessLayer.Services;
-using FinancialTracket.DataAccessLayer.Models;
+﻿using FinancialTracker.Domain.Models;
+using FinancialTracket.DataAccessLayer.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

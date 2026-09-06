@@ -3,7 +3,7 @@ using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 using FinancialTracker.Android.Services;
-using FinancialTracker.DataAccessLayer.Services;
+using FinancialTracket.DataAccessLayer.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FinancialTracker.Android {

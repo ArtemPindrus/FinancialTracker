@@ -1,14 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FinancialTracket.DataAccessLayer;
+using FinancialTracker.Domain;
+using FinancialTracker.Domain.Models;
 using LiveChartsCore.Defaults;
-using Microsoft.EntityFrameworkCore;
-using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FinancialTracker.ViewModels {
     public partial class YearlyExpensesViewModel : MainNavigationPaneViewModel {
-        private readonly IDbContextFactory<AppDbContext> dbContextFactory;
+        private readonly IFinancesService financesService;
 
         [ObservableProperty]
         public int selectedYear;
@@ -21,8 +22,8 @@ namespace FinancialTracker.ViewModels {
 
         public int[] AvailableYears { get; }
 
-        public YearlyExpensesViewModel(IDbContextFactory<AppDbContext> dbContextFactory) {
-            this.dbContextFactory = dbContextFactory;
+        public YearlyExpensesViewModel(IFinancesService financesService) {
+            this.financesService = financesService;
 
             for (int i = 0; i < Expenses.Length; i++) {
                 Expenses[i] = new();
@@ -36,13 +37,11 @@ namespace FinancialTracker.ViewModels {
                 Total[i] = new();
             }
 
-            using (var dbContext = dbContextFactory.CreateDbContext()) {
-                AvailableYears = dbContext.Finances
+            AvailableYears = financesService.GetFinances()
                     .Select(f => f.Date.Year)
                     .Distinct()
                     .OrderByDescending(y => y)
                     .ToArray();
-            }
 
             selectedYear = AvailableYears[0];
 
@@ -53,11 +52,15 @@ namespace FinancialTracker.ViewModels {
             UpdateData();
         }
 
+        public async Task UpdateDataAsync() {
+            await Task.Run(UpdateData);
+        }
+
         public void UpdateData() {
-            using var dbContext = dbContextFactory.CreateDbContext();
+            IEnumerable<Finance> finances = financesService.GetFinances();
 
             // expenses
-            var expenses = dbContext.Finances
+            var expenses = finances
                 .Where(f => f.Amount < 0)
                 .Where(f => f.Date.Year == SelectedYear)
                 .GroupBy(f => f.Date.Month)
@@ -67,7 +70,7 @@ namespace FinancialTracker.ViewModels {
             UpdatePointsData(Expenses, expenses);
 
             // earnings
-            var earnings = dbContext.Finances
+            var earnings = finances
                 .Where(f => f.Amount > 0)
                 .Where(f => f.Date.Year == SelectedYear)
                 .GroupBy(f => f.Date.Month)
@@ -77,7 +80,7 @@ namespace FinancialTracker.ViewModels {
             UpdatePointsData(Earnings, earnings);
 
             // total
-            var total = dbContext.Finances
+            var total = finances
                 .Where(f => f.Date.Year == SelectedYear)
                 .GroupBy(f => f.Date.Month)
                 .Select(g => new ValueTuple<int, double>(g.Key, (double)g.Sum(f => f.Amount)))

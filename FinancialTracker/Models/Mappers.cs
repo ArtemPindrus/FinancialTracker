@@ -1,5 +1,5 @@
-﻿using FinancialTracket.DataAccessLayer;
-using FinancialTracket.DataAccessLayer.Models;
+﻿using FinancialTracker.Domain;
+using FinancialTracker.Domain.Models;
 using System.Linq;
 
 namespace FinancialTracker.Models {
@@ -8,15 +8,18 @@ namespace FinancialTracker.Models {
             return new FinanceRecordDto(f.Id, f.Name, f.Amount, f.Date, f.Tags.Select(t => t.Name).ToList());
         }
 
-        public static Finance ToEntity(this FinanceRecordDto dto, AppDbContext dbContext) {
+        public static Finance ToEntity(this FinanceRecordDto dto, ITagsService tagsService) {
             var f = new Finance() {
+                Id = dto.Id,
                 Name = dto.Name,
                 Amount = dto.Amount,
                 Date = dto.Date,
-                Tags = dbContext.Tags
+                Tags = tagsService.GetTags()
                         .Where(t => dto.Tags.Select(x => x).Contains(t.Name))
                         .ToList()
             };
+
+            if (dto.IsAdded) f.Id = 0; // Reset Id for new records
 
             return f;
         }

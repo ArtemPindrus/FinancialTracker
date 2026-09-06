@@ -2,11 +2,10 @@
 using Avalonia.Data;
 using CommunityToolkit.Mvvm.Input;
 using FinancialTracker.Commands;
+using FinancialTracker.Domain;
 using FinancialTracker.Models;
 using FinancialTracker.Services;
 using FinancialTracker.StateMachines;
-using FinancialTracket.DataAccessLayer;
-using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -46,8 +45,8 @@ namespace FinancialTracker.ViewModels {
 
         private CommandHistory CommandHistory => stateMachine.CommandHistory;
 
-        public FinancesViewModel(IDbContextFactory<AppDbContext> dbContextFactory) {
-            stateMachine = new(this, dbContextFactory);
+        public FinancesViewModel(IFinancesService financesService, ITagsService tagsService) {
+            stateMachine = new(this, financesService, tagsService);
 
             stateMachine.PropertyChanged += StateMachine_PropertyChanged;
             stateMachine.Start();

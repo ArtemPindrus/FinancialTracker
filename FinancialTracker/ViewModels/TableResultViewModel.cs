@@ -4,9 +4,9 @@ namespace FinancialTracker.ViewModels {
     public class TableResultViewModel : ViewModelBase {
         public string[] Columns { get; }
 
-        public List<string[]> Data { get; }
+        public IEnumerable<string[]> Data { get; }
 
-        public TableResultViewModel(string[] columns, List<string[]> data) {
+        public TableResultViewModel(string[] columns, IEnumerable<string[]> data) {
             Columns = columns;
             Data = data;
         }

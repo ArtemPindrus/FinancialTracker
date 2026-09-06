@@ -1,4 +1,4 @@
-﻿namespace FinancialTracket.DataAccessLayer.Models {
+﻿namespace FinancialTracker.Domain.Models {
     public class Finance : BaseEntity {
         public string Name { get; set; }
         public double Amount { get; set; }

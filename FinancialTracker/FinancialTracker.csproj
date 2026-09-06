@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FinancialTracker.Domain\FinancialTracker.Domain.csproj" />
     <ProjectReference Include="..\FinancialTracket.DataAccessLayer\FinancialTracket.DataAccessLayer.csproj" />
   </ItemGroup>
 

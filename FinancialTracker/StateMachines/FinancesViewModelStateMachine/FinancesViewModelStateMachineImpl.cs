@@ -2,10 +2,10 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FinancialTracker.Commands;
+using FinancialTracker.Domain;
+using FinancialTracker.Domain.Models;
 using FinancialTracker.Models;
 using FinancialTracker.ViewModels;
-using FinancialTracket.DataAccessLayer;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -15,7 +15,8 @@ using System.Windows.Input;
 namespace FinancialTracker.StateMachines {
     public partial class FinancesViewModelStateMachine : BaseStateMachine<FinancesViewModelStateMachine.EventId> {
         readonly FinancesViewModel vm;
-        readonly IDbContextFactory<AppDbContext> dbContextFactory;
+        readonly IFinancesService financeService;
+        readonly ITagsService tagsService;
 
         [ObservableProperty]
         public partial List<string> Tags { get; private set; } = [];
@@ -25,9 +26,11 @@ namespace FinancialTracker.StateMachines {
         public CommandHistory CommandHistory { get; }
 
 
-        public FinancesViewModelStateMachine(FinancesViewModel vm, IDbContextFactory<AppDbContext> dbContextFactory) {
+        public FinancesViewModelStateMachine(FinancesViewModel vm, IFinancesService financeService, ITagsService tagsService) {
             this.vm = vm;
-            this.dbContextFactory = dbContextFactory;
+            this.financeService = financeService;
+            this.tagsService = tagsService;
+
             CommandHistory = new();
         }
 
@@ -36,9 +39,19 @@ namespace FinancialTracker.StateMachines {
         async void OnSavingEnter() {
             _ = DialogHostHelper.ShowMainDialog(new ProgressRingViewModel("Saving database..."));
 
-            using (AppDbContext dbContext = dbContextFactory.CreateDbContext()) {
-                await dbContext.SaveModificationsAsync(Finances);
-            }
+            var modified = Finances.Where(x => x.IsModified && !x.IsDeleted);
+            var added = Finances.Where(x => x.IsAdded);
+            var deleted = Finances.Where(x => x.IsDeleted);
+
+            financeService.DeleteFinances(deleted.Select(x => x.Id));
+
+            List<Finance> finances = modified
+                .Select(x => x.ToEntity(tagsService))
+                .ToList();
+
+            financeService.UpdateFinances(finances);
+
+            financeService.AddFinances(added.Select(x => x.ToEntity(tagsService)));
 
             CommandHistory.Clear();
 
@@ -53,10 +66,11 @@ namespace FinancialTracker.StateMachines {
             _ = DialogHostHelper.ShowContentDialog(new ProgressRingViewModel("Querying database..."));
 
             Finances.Clear();
-            using AppDbContext dbContext = dbContextFactory.CreateDbContext();
 
             await Task.Run(() => {
-                Tags = dbContext.Tags.Select(x => x.Name).ToList();
+                Tags = tagsService.GetTags()
+                    .Select(x => x.Name)
+                    .ToList();
 
                 Dispatcher uIThread = Dispatcher.UIThread;
                 uIThread.Invoke(() => {
@@ -64,8 +78,7 @@ namespace FinancialTracker.StateMachines {
                     InitializeMenuItems(vm.RemoveTagsMenuItems, vm.RemoveTagFromSelectedRecordsCommand);
                 });
 
-                var newList = dbContext.Finances
-                    .Include(x => x.Tags)
+                var newList = financeService.GetFinances()
                     .Select(x => x.ToDto())
                     .ToList();
 
