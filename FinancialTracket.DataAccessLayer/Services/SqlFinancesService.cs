@@ -38,7 +38,25 @@ namespace FinancialTracket.DataAccessLayer.Services {
         public void UpdateFinances(IEnumerable<Finance> finances) {
             using var context = dbContextFactory.CreateDbContext();
 
-            context.Finances.UpdateRange(finances);
+            foreach (var newFinance in finances) {
+                Finance? origFinance = context.Finances
+                    .Include(f => f.Tags)
+                    .FirstOrDefault(finance => finance.Id == newFinance.Id);
+
+                if (origFinance != null) {
+                    origFinance.Name = newFinance.Name;
+                    origFinance.Amount = newFinance.Amount;
+                    origFinance.Date = newFinance.Date;
+
+                    origFinance.Tags.Clear();
+                    foreach (var newTag in newFinance.Tags) {
+                        var origTag = context.Tags
+                            .FirstOrDefault(tag => tag.Id == newTag.Id);
+
+                        if (origTag is not null) origFinance.Tags.Add(origTag);
+                    }
+                }
+            }
 
             context.SaveChanges();
         }

@@ -15,8 +15,8 @@ namespace FinancialTracker.Models {
                 Amount = dto.Amount,
                 Date = dto.Date,
                 Tags = tagsService.GetTags()
-                        .Where(t => dto.Tags.Select(x => x).Contains(t.Name))
-                        .ToList()
+                        .Where(t => dto.Tags.Contains(t.Name))
+                        .ToArray()
             };
 
             if (dto.IsAdded) f.Id = 0; // Reset Id for new records
