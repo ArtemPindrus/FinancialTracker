@@ -57,7 +57,8 @@ public partial class MainViewModel : ViewModelBase
         MainNavigationPaneViewModel newVm = newNavigationString switch {
             "Finances" => viewModelResolver.ResolveViewModel<FinancesViewModel>(),
             "Raw Query" => viewModelResolver.ResolveViewModel<RawQueryViewModel>(),
-            "Yearly Expenses" => viewModelResolver.ResolveViewModel<YearlyExpensesViewModel>(),
+            "Yearly Stats" => viewModelResolver.ResolveViewModel<YearlyStatsViewModel>(),
+            "Weekly Stats" => viewModelResolver.ResolveViewModel<WeeklyStatsViewModel>(),
             "Download" => viewModelResolver.ResolveViewModel<DownloadViewModel>(),
             "Upload" => viewModelResolver.ResolveViewModel<UploadViewModel>(),
             _ => throw new NotImplementedException($"No view model implemented for navigation item with content '{newNavigationString}'")

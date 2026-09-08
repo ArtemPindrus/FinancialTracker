@@ -15,7 +15,8 @@ namespace FinancialTracker {
 
             services.AddTransient<FinancesViewModel>();
             services.AddTransient<RawQueryViewModel>();
-            services.AddTransient<YearlyExpensesViewModel>();
+            services.AddTransient<YearlyStatsViewModel>();
+            services.AddTransient<WeeklyStatsViewModel>();
             services.AddTransient<DownloadViewModel>();
             services.AddTransient<UploadViewModel>();
 

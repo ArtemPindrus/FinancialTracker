@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace FinancialTracker.Views;
 
-public partial class YearlyExpensesView : UserControl
+public partial class YearlyStatsView : UserControl
 {
-    public YearlyExpensesView()
+    public YearlyStatsView()
     {
         InitializeComponent();
     }

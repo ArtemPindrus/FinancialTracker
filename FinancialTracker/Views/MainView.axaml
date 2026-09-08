@@ -31,7 +31,8 @@
                 <ui:FANavigationViewItem Content="Raw Query" />
                 <ui:FANavigationViewItem Content="Charts" SelectsOnInvoked="False">
                     <ui:FANavigationViewItem.MenuItems>
-                        <ui:FANavigationViewItem Content="Yearly Expenses" />
+                        <ui:FANavigationViewItem Content="Yearly Stats" />
+                        <ui:FANavigationViewItem Content="Weekly Stats" />
                     </ui:FANavigationViewItem.MenuItems>
                 </ui:FANavigationViewItem>
                 <ui:FANavigationViewItem Content="Sync" SelectsOnInvoked="False">

@@ -43,8 +43,11 @@
     <Compile Update="Views\TextResultView.axaml.cs">
       <DependentUpon>TextResultView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\YearlyExpensesView.axaml.cs">
-      <DependentUpon>YearlyExpensesView.axaml</DependentUpon>
+    <Compile Update="Views\WeeklyStatsView.axaml.cs">
+      <DependentUpon>WeeklyStatsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\YearlyStatsView.axaml.cs">
+      <DependentUpon>YearlyStatsView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
